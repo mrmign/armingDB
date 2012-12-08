@@ -25,8 +25,57 @@
 #define MAX 1024
 #define SUCCESS 0
 #define FAIL -1
+
+char cmd[6];
+int key_in=0;
+char value[200]; 
+char dbname[10];
 int main(int argc, char **argv)
 {
+	
+	
+
+	char buf[MAX];
+	int i =3;
+	
+	while(1)
+	{
+		if(!getLine(buf,MAX))
+			continue;
+		else
+		{
+			checkCmd(buf);
+		}
+
+	}
+}
+
+int getLine(char *buf, int size)
+{
+	int length = 0; // record the input size
+	printf("armingDB::");
+	length = fgets(buf,size,stdin);
+
+	// buf[length] = '\0';
+
+	if(length==0)
+		return 0;
+	else
+		return length;
+	
+}
+
+int checkCmd(char *buf)
+{
+	sscanf(buf,"%s%d%s",cmd,&key_in,value);
+	printf("%s%d%s\n",cmd,key_in,value );
+	// if(strcmp(cmd,"open"))
+	key_in = 0;
+	value[0] = '\0';
+}
+
+
+	/*
 	Database db;
 	db = createNewDB();
 
@@ -64,4 +113,5 @@ int main(int argc, char **argv)
 	{
 		printf("closeDB successfully!\n");
 	}
-}
+	*/
+
