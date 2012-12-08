@@ -24,7 +24,7 @@
 #define API_H_
 
 typedef void* Database;
-typedef unsigned int key;
+// typedef unsigned int key;
 
 typedef struct myData
 {
@@ -48,8 +48,8 @@ Database createNewDB(const char *dbName);
  * in/out	: None
  * return	: SUCCESS(true)/FAILURE(false)
  */
-
-bool closeDB(Database db);
+int closeDB(Database db);
+// bool closeDB(Database db);
 /*
  * save key/value into database
  * input	: database name, data to be saved

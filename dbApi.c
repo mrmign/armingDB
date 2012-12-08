@@ -40,15 +40,15 @@ Database createNewDB(const char *dbName)
 /*
  * close DB
  */ 
-bool closeDB(Database db)
+int closeDB(Database db)
 {
 	if (tchdbclose(db))
-		return true;
+		return 1;
 	else
 	{
 		int ecode = tchdbecode(db);
 		fprintf(stderr, "close error: %s\n", tchdberrmsg(ecode));
-		return false;
+		return -1;
 	}
 }
 
@@ -76,7 +76,7 @@ int getValue(Database db, int key, Data *result)
 	int ecode;
 	int count;
 	count = tchdbget3(db, &key, sizeof(int), result->value, 1024);
-	if (!count)
+	if (count == -1)
 	{
 		ecode = tchdbecode(db);
 		fprintf(stderr, "get error: %s\n", tchdberrmsg(ecode));
