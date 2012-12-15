@@ -12,3 +12,6 @@ These operations are as followd:
 5. close - leave xm.db
 6. help - list cmds info 
 7. exit - exit from the program
+
+----------------------------------------------------------------
+## add C/S structure.

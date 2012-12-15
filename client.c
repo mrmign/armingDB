@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <regex.h>
 #include "dbApi.h"
-
+#include "debug.h"
 #define MAX 1024
 #define SUCCESS 0
 #define FAIL -1
@@ -65,7 +65,9 @@ int main(int argc, char **argv)
 
 int getLine(char *buf, int size)
 {
-	unsigned int length = 1; // record the input size
+	debug;
+
+    unsigned int length = 1; // record the input size
 	printf("%s%s>>",name,dbname);
 	// length = fgets(buf,size,stdin);
 	fgets(buf,size,stdin);
@@ -81,14 +83,17 @@ int getLine(char *buf, int size)
 
 void substr(const char*str,char* buf, unsigned start, unsigned end)
 {
+    debug;
     unsigned n = end - start;
     // static char stbuf[256];
     strncpy(buf, str + start, n);
     buf[n] = 0;
+    // printf("substr%s\nstart:%u,end:%u\n", buf,start,end);
     // return stbuf;
 }
 int check(char *pat, char *str)
 {
+    debug;
     int res;
     regex_t reg;
     //    regmatch_t pm[10];
@@ -123,6 +128,7 @@ int check(char *pat, char *str)
 int exeCmd(char *str)
 {
 
+    debug;
     if (check("[a-zA-Z]+",str) != 0)
         return;
     
@@ -143,7 +149,7 @@ int exeCmd(char *str)
 	        db = createNewDB(dbname);
 	        // printf("%s%s", name,dbname);
         }
-        
+        debug;
     }
     else if(strcmp(cmd,"close") == 0)
     {
@@ -168,11 +174,14 @@ int exeCmd(char *str)
     	int key_v = atoi(key);
 
     	pre += pm[0].rm_eo;
-    	check(".*",str+pm[0].rm_eo);
-    	substr(str,value,pre + pm[0].rm_so,pre + pm[0].rm_eo);
+    	// check(".*",str+pm[0].rm_eo);
+        // substr(str,value,pre + pm[0].rm_so,pre + pm[0].rm_eo);
+        check("\\S+",str+pre);
+
+    	substr(str,value,pre + pm[0].rm_so,strlen(str));
 
     	Data tdata;
-    	tdata.length = MAX;
+    	tdata.length = sizeof(value);
     	tdata.value = value;
     	// printf("%d-%s\n",key_v,value );
     	if(putKeyValue(db,key_v,&tdata) != 0)
@@ -196,9 +205,9 @@ int exeCmd(char *str)
     	char get[MAX]="\0";
     	Data tdata;
     	tdata.value = get;
-    	if(getValue(db,key_v,&tdata)==0)
+    	if(getValueByKey(db,key_v,&tdata)==0)
     	{
-    		printf("%d => %s", key_v,get);
+    		printf("%d => %s\n", key_v,tdata.value);
     	}
     	else
     	{
@@ -227,6 +236,8 @@ int exeCmd(char *str)
         printf("delete key    - EX:delete 100\n");
         printf("close         - leave nezha.hdb\n"); 
         printf("help          - list cmds info\n"); 
+        printf("exit          - exit\n"); 
+    
     }
     else if(strcmp(cmd,"exit") == 0)
     {

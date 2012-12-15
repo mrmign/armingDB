@@ -39,7 +39,7 @@ typedef struct myData
  * in/out	: None
  * return	: the database file
  */
-Database createNewDB(const char *dbName);
+Database createNewDB(char *dbName);
 
 /*
  * Close  DB

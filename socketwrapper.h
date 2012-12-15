@@ -7,7 +7,7 @@
 /*  MODULE NAME           :  socketwraper                           */
 /*  LANGUAGE              :  C                                      */
 /*  TARGET ENVIRONMENT    :  Linux                                  */
-/*  DATE OF FIRST RELEASE :  2012/11/22                             */
+/*  DATE OF FIRST RELEASE :  2012/12/07                             */
 /*  DESCRIPTION           :  the interface to Linux system(socket)  */
 /********************************************************************/
 
@@ -30,7 +30,7 @@
 // #define PORT                5001
 // #define IP_ADDR             "127.0.0.1"
 // #define MAX_BUF_LEN         1024
-
+#define MAX_CONNECT_QUEUE   128
 typedef int ServiceHandler;
 /* public api */
 
@@ -75,7 +75,7 @@ ServiceHandler open_remote_service(char *addr, int port);
  * return   : if SUCCESS return 0
  *          : if FAILURE return (-1)
  */ 
-int close_remote_service();
+int close_remote_service(ServiceHandler h);
  
  /*
  * service_start
@@ -96,7 +96,7 @@ ServiceHandler service_start();
  * return   : if SUCCESS return 0
  *          : if FAILURE return (-1)
  */ 
-int service_stop();
+int service_stop(ServiceHandler h);
 
 
 /*
@@ -123,7 +123,7 @@ int send_data(ServiceHandler h, char *buf, int bufSize);
  *          : if FAILURE return (-1)
  *          : if Connection Terminals return 0
  */
-int receive_data(ServiceHandler h, char *buf, int bufSize);
+int receive_data(ServiceHandler h, char *buf, int *bufSize);
         
 #endif /* _SOCKET_WRAPPER_H_ */
 

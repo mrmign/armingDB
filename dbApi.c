@@ -23,9 +23,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "dbApi.h"
-
-Database createNewDB(const char *dbName)
+#include "debug.h"
+Database createNewDB(char *dbName)
 {
+	debug;
 	TCHDB *tdb = tchdbnew();
 
 	if (!tchdbopen(tdb, dbName, HDBOWRITER | HDBOCREAT))
@@ -42,6 +43,7 @@ Database createNewDB(const char *dbName)
  */ 
 int closeDB(Database db)
 {
+	debug;
 	if (tchdbclose(db))
 		return 1;
 	else
@@ -57,6 +59,7 @@ int closeDB(Database db)
  */
 int putKeyValue(Database db, int key, Data *tdata)
 {
+	debug;
 	int ecode;
 	if (tchdbput(db, &key, sizeof(int), tdata->value,
 			tdata->length))
@@ -71,8 +74,9 @@ int putKeyValue(Database db, int key, Data *tdata)
 /*
  * get value with the key
  */
-int getValue(Database db, int key, Data *result)
+int getValueByKey(Database db, int key, Data *result)
 {
+	debug;
 	int ecode;
 	int count;
 	count = tchdbget3(db, &key, sizeof(int), result->value, 1024);
@@ -97,6 +101,8 @@ int getValue(Database db, int key, Data *result)
  */
 int deleteValueByKey(Database db, int key)
 {
+	
+	debug;
 	int ecode;
 
 	if (!tchdbout(db, &key, sizeof(key)))
