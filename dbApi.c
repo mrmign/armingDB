@@ -61,6 +61,7 @@ int putKeyValue(Database db, int key, Data *tdata)
 {
 	debug;
 	int ecode;
+	// printf("server put key value: %d => %s\n", key, tdata->value);
 	if (tchdbput(db, &key, sizeof(int), tdata->value,
 			tdata->length))
 		return 0;
@@ -79,6 +80,7 @@ int getValueByKey(Database db, int key, Data *result)
 	debug;
 	int ecode;
 	int count;
+	// printf("server get key: %d\n", key);
 	count = tchdbget3(db, &key, sizeof(int), result->value, 1024);
 	if (count == -1)
 	{
@@ -90,6 +92,8 @@ int getValueByKey(Database db, int key, Data *result)
 	{
 		result->length = count;
 		result->value[count] = '\0';
+
+		// printf("server getvalue: count:%d  value: %d => %s\n",count, key, result->value);
 		return 0;
 		
 	}
