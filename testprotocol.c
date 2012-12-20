@@ -32,6 +32,8 @@ int main()
     char *str = "arming.hdb";
     char val1[MAX_BUF_LEN] = "\0";
     char val2[MAX_BUF_LEN] = "this is a teate ljfdkla  !";
+    char val3[MAX_BUF_LEN]="\0";
+    char val4[MAX_BUF_LEN]="\0";
 
     mDataFormat data = (mDataFormat) malloc(sizeof(struct DataFormat));
     data->cmd = SET_CMD;
@@ -46,12 +48,12 @@ int main()
     printf("format_data %s  size %d\n", Buf,size);
 
     mDataFormat rec = (mDataFormat) malloc(sizeof(struct DataFormat));
-    rec->value1 = val1;
-    rec->value2 = val2;
+    rec->value1 = val3;
+    rec->value2 = val4;
     parse_data(Buf, rec);
-    printf("%d, %d, %s \n", rec->cmd, rec->value_num, rec->value1);
+    printf("rec %d, %d, %s \n", rec->cmd, rec->value_num, rec->value1);
     assert(rec->cmd > 0);
-    if (rec->cmd == OPEN_CMD)
+    if (rec->cmd == SET_CMD)
     {
         printf("success! value1 %s\n",rec->value1);
     }
