@@ -25,7 +25,7 @@
 #define SET_CMD		3
 #define GET_CMD		4
 #define DEL_CMD		5
-// #define ERROR		0
+#define ERROR_RESP  0
 typedef struct DataFormat
 {
 	int cmd;
@@ -37,7 +37,24 @@ typedef struct DataFormat
 }*mDataFormat;
 // typedef struct DataFormat *mDataFormat;
 
+/*
+ * Format the data to be sent
+ * input	: buf, data
+ * output	: None
+ * in/out	: buf, the formated data to be sent
+ * return	: if SUCCESS return the size of the data to be sent
+ 			: if FAIL return  -1 
+ */
 int format_data(char *buf, mDataFormat data);
+
+/*
+ * parse the data received from net
+ * input	: buf, data
+ * output	: None
+ * in/out	: data, parse the data from net format to local formt
+ * return	: if SUCCESS return 0
+ 			: if FAIL    return -1
+ */
 int parse_data(char *buf, mDataFormat data);
 
 #endif /* _PROTOCOL_H_*/ 
