@@ -52,20 +52,34 @@ int main()
     shutdown_service();
     return 0;
 }
+
+/*
+ * deal with incorrect operation
+ */
 int error_response(ServiceHandler h,char * errorinfo)
 {
-   /* char Buf[MAX_BUF_LEN] = "\0";
+    char Buf[MAX_BUF_LEN] = "\0";
     int BufSize = MAX_BUF_LEN;
-    FormatData1(Buf,&BufSize,ERROR_RSP,errorinfo,strlen(errorinfo));
-    SendData(h,Buf,BufSize);*/
+    mDataFormat data = (mDataFormat) malloc(sizeof(struct DataFormat));
+    data->cmd = ERROR_RESP;
+    data->value_num = 1;
+    data->len_value1 = strlen(errorinfo);
+    data->value1 = errorinfo;
+
+    BufSize = format_data(Buf, data);
+    send_data(h,Buf,BufSize);
     return 0;    
 }
 
 void printRec(mDataFormat data)
 {
     printf("cmd:%d\nnum:%d\nlen1:%d\nvalu1:%s\nlen2:%d\nvalu2:%s\n", data->cmd,data->value_num,data->len_value1,data->value1,data->len_value2,data->value2);
+    // printf("%s:%d  %s\n",__FILE__,__LINE__,__FUNCTION__);
 }
 
+/*
+ * handle user's requests
+ */
 int handle_request(ServiceHandler h)
 {
    
@@ -83,6 +97,11 @@ int handle_request(ServiceHandler h)
     {
         BufSize = MAX_BUF_LEN;
 
+        memset(Data1, 0, MAX_BUF_LEN);
+        memset(Data2, 0, MAX_BUF_LEN);
+        data->value1 = Data1;
+        data->value2 = Data2;
+
         if(receive_data(h,Buf,&BufSize) == 0)
         {
             fprintf(stderr,"Connection Error,%s:%d\n",__FILE__,__LINE__);
@@ -93,10 +112,13 @@ int handle_request(ServiceHandler h)
             continue;
         }
         int ret = parse_data(Buf,data);
-        printRec(data);
+
+        // print the received data
+        // printRec(data);
+        
         if(ret == -1)
         {
-            // ErrorResponse(h,"Data Format Error!\n");
+            error_response(h,"Data Format Error!\n");
             printf("server parse_data error!\n");
             continue;
         }
@@ -116,7 +138,7 @@ int handle_request(ServiceHandler h)
             BufSize = MAX_BUF_LEN;
             data->value_num = 0;
             BufSize = format_data(Buf,data);
-            send_data(h,Buf,BufSize);        
+            send_data(h,Buf,BufSize);
             return 0;
         }
         else if(data->cmd == GET_CMD)
@@ -127,12 +149,13 @@ int handle_request(ServiceHandler h)
                 continue;            
             }*/
 
-            int key = atoi(data->value1);
+            int key = *(int *)data->value1;
             Data value;
-            // Data2Size = MAX_BUF_LEN;
-            // value.length = Data2Size;
-            value.value = Data2;
+ 
+            char tem[MAX_BUF_LEN] = "\0";
+            value.value = tem;
             ret = getValueByKey(db, key, &value);
+            // printf("server getdata value => %s\n", value.value);
             if(ret == -1)
             {
                 error_response(h,"The key NOT FOUND!\n");
@@ -144,6 +167,10 @@ int handle_request(ServiceHandler h)
             data->value1 = value.value;
             BufSize = format_data(Buf,data);
             send_data(h,Buf,BufSize);
+           
+            // Buf[0]=0;
+            // Data1[0]=0;
+            // Data2[0]=0;
         }
         else if(data->cmd == SET_CMD)
         {
@@ -152,17 +179,24 @@ int handle_request(ServiceHandler h)
                 fprintf(stderr,"Data Format Error,%s:%d\n",__FILE__,__LINE__);
                 continue;            
             }*/
-            int key = atoi(data->value1);
+            int key = *(int *)data->value1;
             Data value;
             // value.len = Data2Size;
             value.value = data->value2;
+            value.length = data->len_value2;
             // debug("SET_CMD:%d -> %s\n",*(tKey*)(Buf + 12),(char*)(Buf + 20));
             // debug("SET_CMD:%d -> %s\n",key,value.str);
-            putKeyValue(db,key,&value);
+            ret = putKeyValue(db,key,&value);
+            if (ret == -1)
+            {
+                error_response(h,"Save key & value error!\n");
+                printf("set error : %d, %s\n", key, value.value);
+            }
             BufSize = MAX_BUF_LEN;
             data->value_num = 0;
             BufSize = format_data(Buf,data);
-            send_data(h,Buf,BufSize);                             
+            send_data(h,Buf,BufSize);    
+                      
         }
         else if(data->cmd == DEL_CMD)
         {
@@ -171,7 +205,7 @@ int handle_request(ServiceHandler h)
                 fprintf(stderr,"Data Format Error,%s:%d\n",__FILE__,__LINE__);
                 continue;            
             }*/
-            int key = atoi(data->value1);           
+            int key = *(int *)data->value1;;           
             ret = deleteValueByKey(db,key);
             if(ret == -1)
             {
