@@ -30,6 +30,10 @@
 // 	int value_num;
 
 // } mDataHeader;
+
+/*
+ * format data
+ */
 int format_data( char *buf, mDataFormat data)
 {
 	debug;
@@ -70,6 +74,9 @@ int format_data( char *buf, mDataFormat data)
 
 }
 
+/*
+ * parse data
+ */
 int parse_data(char *buf, mDataFormat data)
 {
 	debug;
@@ -81,7 +88,7 @@ int parse_data(char *buf, mDataFormat data)
 	int *num = (int *)(buf + size);
 	data->value_num = ntohl(*num);
 	size += sizeof(data->value_num);
-	int *le1 = (int *)(buf + size);
+	// int *le1 = (int *)(buf + size);
 	// printf("cmd %d num %d len1 %d\n", ntohl(*cmd), ntohl(*num), ntohl(*le1));
 	if (data->value_num == 0)
 	{
