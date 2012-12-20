@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-
 #define PORT                5001
 #define IP_ADDR             "127.0.0.1"
 #define MAX_BUF_LEN         1024
@@ -42,12 +41,12 @@ Database createNewDB(char *dbName)
 	h = open_remote_service(IP_ADDR,PORT);
     if(h == -1)
     {
-        exit(-1);   
+        exit(-1);
     }
     mDataFormat d = (mDataFormat) malloc(sizeof(struct DataFormat));
     d->cmd = OPEN_CMD;
     d->value_num = 1;
-    d->len_value1 = sizeof(dbName);
+    d->len_value1 = strlen(dbName);
     d->value1 = dbName;
 
     char buf[MAX_BUF_LEN] = "\0";
@@ -66,7 +65,7 @@ Database createNewDB(char *dbName)
     {
         fprintf(stderr,"Remote DBCreate Error,%s:%d\n", __FILE__,__LINE__);
     }
-      
+    free(d);
     return (Database)&h;
 }
 
@@ -115,10 +114,8 @@ int putKeyValue(Database db, int key, Data *tdata)
     d->len_value2 = strlen(tdata->value);
     d->value2 = tdata->value;
 
-    char keybuf[5] = "\0";
-    sprintf(keybuf,"%d",key);
-    d->len_value1 = strlen(keybuf);
-    d->value1 = keybuf;
+    d->len_value1 = sizeof(int);
+    d->value1 = (char *)&key;
 
     char buf[MAX_BUF_LEN] = "\0";
     int bufSize = 0;
@@ -149,12 +146,10 @@ int getValueByKey(Database db, int key, Data *result)
 	mDataFormat d = (mDataFormat) malloc(sizeof(struct DataFormat));
     d->cmd = GET_CMD;
     d->value_num = 1;
-    char keybuf[5] = "\0";
-    sprintf(keybuf,"%d",key);
-    d->len_value1 = strlen(keybuf);
-    d->value1 = keybuf;
 
-
+    d->len_value1 = sizeof(int);
+    d->value1 = (char *)&key;
+    
     char buf[MAX_BUF_LEN] = "\0";
     int bufSize = 0;
     bufSize = format_data(buf, d);
@@ -170,14 +165,15 @@ int getValueByKey(Database db, int key, Data *result)
     receive_data(h,buf,&bufSize);
     parse_data(buf, d);
 
-    printRec(d);
+    // printRec(d);
     
-    result->length = strlen(value);
-    strncpy(result->value, value, result->length);
+    result->length = d->len_value1;
+    strncpy(result->value, d->value1, result->length);
 
     if(d->cmd != GET_CMD)
     {
         fprintf(stderr,"Remote DBCreate Error,%s:%d\n", __FILE__,__LINE__);
+        fprintf(stderr, "Get message from server:%s\n", result->value);
         free(d);
         return -1;
     } 
@@ -193,11 +189,13 @@ int deleteValueByKey(Database db, int key)
 	mDataFormat d = (mDataFormat) malloc(sizeof(struct DataFormat));
     d->cmd = DEL_CMD;
     d->value_num = 1;
-    char keybuf[5] = "\0";
-    sprintf(keybuf,"%d",key);
-    d->len_value1 = strlen(keybuf);
-    d->value1 = keybuf;
-
+    // char keybuf[5] = "\0";
+    // sprintf(keybuf,"%d",key);
+    // d->len_value1 = strlen(keybuf);
+    // d->value1 = keybuf;
+    d->len_value1 = sizeof(int);
+    d->value1 = (char *)&key;
+    
     char buf[MAX_BUF_LEN] = "\0";
     int bufSize = 0;
     bufSize = format_data(buf, d);
