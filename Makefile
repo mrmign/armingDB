@@ -16,9 +16,9 @@ arming:	dbApi.o client.o
 test: protocol.o testprotocol.o socketwrapper.o testsocketwrapperclient.o testsocketwrapperserver.o
 	gcc -o testprotocol protocol.o testprotocol.o
 	./testprotocol
-	gcc -o testserver socketwrapper.o testsocketwrapperserver.o
-	gcc -o testclient socketwrapper.o testsocketwrapperclient.o
-	./testserver
+	# gcc -o testserver socketwrapper.o testsocketwrapperserver.o
+	# gcc -o testclient socketwrapper.o testsocketwrapperclient.o
+	# ./testserver
 	
 	# ./testclient
 .c.o:
