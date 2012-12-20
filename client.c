@@ -63,6 +63,9 @@ int main(int argc, char **argv)
 	}
 }
 
+/*
+ * get user input
+ */
 int getLine(char *buf, int size)
 {
 	debug;
@@ -80,7 +83,9 @@ int getLine(char *buf, int size)
 	
 }
 
-
+/*
+ * get sub string
+ */
 void substr(const char*str,char* buf, unsigned start, unsigned end)
 {
     debug;
@@ -125,6 +130,10 @@ int check(char *pat, char *str)
         return 0;
     }
 }
+
+/*
+ * execute user's command
+ */
 int exeCmd(char *str)
 {
 
@@ -181,7 +190,7 @@ int exeCmd(char *str)
     	substr(str,value,pre + pm[0].rm_so,strlen(str));
 
     	Data tdata;
-    	tdata.length = sizeof(value);
+    	tdata.length = strlen(value);
     	tdata.value = value;
     	// printf("%d-%s\n",key_v,value );
     	if(putKeyValue(db,key_v,&tdata) != 0)
