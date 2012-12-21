@@ -1,7 +1,7 @@
 /********************************************************************/
 /* Copyright (C) SSE-USTC, 2012                                     */
 /*                                                                  */
-/*  FILE NAME             :  api.c                                  */
+/*  FILE NAME             :  dbApi.c                                */
 /*  PRINCIPAL AUTHOR      :  LeeMing                                */
 /*  SUBSYSTEM NAME        :  db                                     */
 /*  MODULE NAME           :  db                                     */
@@ -22,12 +22,43 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 #include "dbApi.h"
 #include "debug.h"
+
+TCMDB *all_opened_db = NULL;
+
+typedef struct opened_db
+{
+    TCHDB *hdb;
+    int counter;
+}mOpenedDB;
 Database createNewDB(char *dbName)
 {
 	debug;
-	TCHDB *tdb = tchdbnew();
+    int code;
+    TCHDM *hdb;
+    if (all_opened_db == NULL )
+    {
+        all_opened_db = tcmdbnew();
+    }
+    else
+    {
+        int vsize = -1;
+        mOpenedDB *opendb = (mOpenedDB *)tcmdbget(all_opened_db, (void *)dbName, strlen(dbName), &vsize);
+        if(opendb != NULL)
+        {
+            hdb = opendb->hdb;
+            opendb->counter ++;
+            tcmdbput(all_opened_db, (void *)dbName, strlen(dbName), (void *)opendb, vsize);
+            free (opendb);
+            return (Database)hdb;
+        }
+
+	tdb = tchdbnew();
+
+    //set mutex exclusion
+    tchdbsetmutex(hdb);
 
 	if (!tchdbopen(tdb, dbName, HDBOWRITER | HDBOCREAT))
 	{
@@ -35,6 +66,10 @@ Database createNewDB(char *dbName)
 		fprintf(stderr, "close error: %s\n", tchdberrmsg(ecode));
 		exit(-1);
 	}
+    mOpenedDB db;
+    db.hdb = hdb;
+    db.counter = 1;
+    tcmdbput(all_opened_db, (void *)dbName, strlen(dbName), (void *)&db, sizeof(mOpenedDB));
 	return (Database) tdb;
 }
 
@@ -44,8 +79,46 @@ Database createNewDB(char *dbName)
 int closeDB(Database db)
 {
 	debug;
+    TCHDB *hdb = (TCHDB *)db;
+    int code;
+    int i;
+    long sum = (long)tcmdbrnum(all_opened_db);
+    tcmdbiterinit(all_opened_db);
+    for (i = 0; i < sum; i++)
+    {
+        int ksize = -1;
+        char *dbname = (char *)tcmdbiternext(all_opened_db, &ksize);
+        if (dbname == NULL)
+        {
+            printf("DBClose: can't find the db %s %d\n", __FILE__, __LINE__);
+            break;
+        }
+        int vsize = -1;
+        mOpenedDB *opendb = (mOpenedDB *)tcmdbget(all_opened_db, (void *)dbname, ksize, &vsize);
+        if(opendb != NULL && opendb->hdb == hdb)
+        {
+            opendb->counter --;
+            if(opendb->counter <= 0)
+            {
+                tcmdbout(all_opened_db,(void *)dbname, ksize);
+                free(dbname);
+                free(opendb);
+                break;
+            }
+            tcmdbput(all_opened_db, (void *)dbname, ksize, (void *)opendb, vsize);
+            free(dbname);
+            free(opendb);
+            return 0;
+        }
+        free(dbname);
+        free(opendb);
+    }
+
+
 	if (tchdbclose(db))
-		return 1;
+    {
+        tchdbdel(hdb);
+		return 0;
 	else
 	{
 		int ecode = tchdbecode(db);
@@ -117,4 +190,57 @@ int deleteValueByKey(Database db, int key)
 	}
 
 	return 0;
+}
+
+/*
+ * Create an Memory Database
+ */
+Database  create_MDB()
+{
+    TCMDB * mdb = tcmdbnew();
+    return (Database)mdb;
+}
+    
+/*
+ * Delete the Database
+ */
+int delete_MDB(Database mdb)
+{
+    tcmdbdel((TCMDB*)mdb);
+    return 0;
+}
+
+
+/*
+ * Set key/value
+ */ 
+int putKeyValue_MDB(Database mdb,int key,Data value)
+{
+    tcmdbput((TCMDB*)mdb,(void*)&key,sizeof(int),value.value,value.length); 
+    return 0;  
+}
+
+/*
+ * get key/value
+ */
+int getValueByKey_MDB(Database mdb,int key,Data *value)
+{
+    int vsize = -1;
+    char *v = tcmdbget((TCMDB*)mdb,(void*)&key,sizeof(int),&vsize);
+    if(v != NULL && vsize > 0 && vsize <= pvalue->len)
+    {
+        memcpy(value->value,v,vsize);
+        value->length = vsize;
+        return 0;
+    }
+    return -1;
+}
+
+/*
+ * delete key/value
+ */
+int deleteValueByKey_MDB(Database mdb,int key)
+{
+    tcmdbout((TCMDB*)mdb,(void*)&key,sizeof(int));
+    return 0;
 }

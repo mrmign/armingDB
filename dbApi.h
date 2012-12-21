@@ -78,4 +78,56 @@ int getValueByKey(Database db, int key, Data *result);
 int deleteValueByKey(Database db, int key);
 
 
+/**********************************************/
+/* Memory Database(no file) Operations
+/**********************************************/
+/*
+ * Create an Memory Database
+ * input	: None
+ * output	: None
+ * in/out	: None
+ * return	: if SUCCESS return (tDatabase *)Database handler
+ *          : if FAILURE exit(-1)
+ */
+Database  create_MDB();
+	
+/*
+ * Delete the Database
+ * input	: tDatabase db
+ * output	: None
+ * in/out	: None
+ * return	: SUCCESS(0)/exit(-1)
+ */
+int delete_MDB(Database mdb);
+
+
+/*
+ * Set key/value
+ * input	: tKey key,tValue value - one key/value
+ * output	: None
+ * in/out	: None
+ * return	: SUCCESS(0)/FAILURE(-1)
+ */	
+int putKeyValue_MDB(Database mdb,int key,Data value);
+
+/*
+ * get key/value
+ * input	: tKey key
+ * output	: None
+ * in/out	: tValue *pvalue MUST BE initialized,it means pvalue->str is malloced,
+            : and pvalue->len is the length of pvalue->str 
+            : if return SUCCESS(0),value will stored in pvalue(str,len).
+ * return	: SUCCESS(0)/FAILURE(-1)
+ */
+int getValueByKey_MDB(Database mdb,int key,Data *value);
+
+/*
+ * delete key/value
+ * input	: tKey key
+ * output	: None
+ * in/out	: None
+ * return	: SUCCESS(0)/FAILURE(-1)
+ */
+int deleteValueByKey_MDB(Database mdb,int key);
+
 #endif /* API_H_ */
