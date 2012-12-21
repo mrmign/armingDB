@@ -111,7 +111,11 @@ int initialize_service(char *addr, int port)
     PrepareSocket(addr,port);
     epollfd = epoll_create(MAX_CONNECT_FD);
     set_nonblocking(sockfd);
+    event.data.fd = sockfd;
+    event.events = EPOLLIN | EPOLLRDHUP;
+    epoll_ctl(epollfd, EPOLL_CTL_ADD, sockfd, &event);
     InitServer();
+    return 0;
 }
 
 int shutdown_service()
@@ -122,6 +126,9 @@ int shutdown_service()
         return -1;
     }
     close(sockfd);
+    if ( epollfd == -1)
+        return -1;
+    close(epollfd);
     return 0;
 }		
 
@@ -147,49 +154,65 @@ int close_remote_service(ServiceHandler h)
 ServiceHandler service_start()
 {
     debug;
-    struct sockaddr_in clientaddr;
-    socklen_t addr_len = sizeof(struct sockaddr);
-    int newfd = accept( sockfd,(struct sockaddr *)&clientaddr,&addr_len);
-    if(newfd == -1) 
+    while (1)
     {
-        fprintf(stderr,"Accept Error,%s:%d\n", __FILE__,__LINE__);
-    }
-    return (ServiceHandler)newfd;
-}                            
+        struct epoll_event event;
+        int fdnum = epoll_wait(epollfd, &event, 1, -1);
+        if(event.data.fd == sockfd)
+        {
 
-int service_stop(ServiceHandler h)
-{
-    debug;
-    if(h <= 0)
-    {
-        return -1;
-    }
-    close(h);
-    return 0;   
-}
+            struct sockaddr_in clientaddr;
+            socklen_t addr_len = sizeof(struct sockaddr);
+            int newfd = accept( sockfd,(struct sockaddr *)&clientaddr,&addr_len);
+            if(newfd == -1) 
+            {
+                fprintf(stderr,"Accept Error,%s:%d\n", __FILE__,__LINE__);
+            }
+            set_nonblocking(newfd);
+            event.data.fd = newfd;
+            event.events = EPOLLIN;
+            epoll_ctl(epollfd, EPOLL_CTL_ADD, newfd, &event);
+        }
+        else if( (event.events & EPOLLIN) && (event.events & EPOLLRDHUP))
+            close(event.data.fd);
+        else
 
-int send_data(ServiceHandler h, char *buf, int bufSize)
-{
-    debug;
-    int ret = send(h,buf,bufSize,0);
-    if(ret < 0 || ret != bufSize)
-    {
-        fprintf(stderr,"Send Error,%s:%d\n",__FILE__,__LINE__);
-        return -1;
-    }
-    return ret;
+            return (ServiceHandler)newfd;
+    }                            
 }
+    int service_stop(ServiceHandler h)
+    {
+        debug;
+        if(h <= 0)
+        {
+            return -1;
+        }
+        close(h);
+        return 0;   
+    }
 
-int receive_data(ServiceHandler h, char *buf, int *bufSize)
-{
-    debug;
-    int ret = recv(h,buf,*bufSize,0);
-    if(ret < 0)
+    int send_data(ServiceHandler h, char *buf, int bufSize)
     {
-        fprintf(stderr,"Recv Error,%s:%d\n",__FILE__,__LINE__);
-        *bufSize = 0;
-        return -1;
+        debug;
+        int ret = send(h,buf,bufSize,0);
+        if(ret < 0 || ret != bufSize)
+        {
+            fprintf(stderr,"Send Error,%s:%d\n",__FILE__,__LINE__);
+            return -1;
+        }
+        return ret;
     }
-    *bufSize = ret;
-    return ret;
-}
+
+    int receive_data(ServiceHandler h, char *buf, int *bufSize)
+    {
+        debug;
+        int ret = recv(h,buf,*bufSize,0);
+        if(ret < 0)
+        {
+            fprintf(stderr,"Recv Error,%s:%d\n",__FILE__,__LINE__);
+            *bufSize = 0;
+            return -1;
+        }
+        *bufSize = ret;
+        return ret;
+    }
