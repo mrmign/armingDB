@@ -210,7 +210,6 @@ int delete_MDB(Database mdb)
     return 0;
 }
 
-
 /*
  * Set key/value
  */ 
