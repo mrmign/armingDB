@@ -23,78 +23,100 @@
 #include <stdlib.h> 
 #include <arpa/inet.h> /* internet socket */
 #include <string.h>
+#include <sys/epoll.h>
+#include <fcntl.h>
 #include "socketwrapper.h"
 #include "socketwrapper_priv.h"
 #include "debug.h" 
 int sockfd = -1;
-
+int epollfd = -1;
 struct sockaddr_in serveraddr;                  
 struct sockaddr_in clientaddr;  
 // #define MAX_CONNECT_QUEUE 1023
- //  private macro 
+//  private macro 
 void PrepareSocket(char *addr,int port)                        
- {
+{
     debug;
-  	// struct sockaddr_in serveraddr;                  
-   //      struct sockaddr_in clientaddr;                  
-        socklen_t addr_len = sizeof(struct sockaddr);   
-        serveraddr.sin_family = AF_INET;                
-        serveraddr.sin_port = htons(port);              
-        serveraddr.sin_addr.s_addr = inet_addr(addr);   
-        memset(&serveraddr.sin_zero, 0, 8);             
-        sockfd = socket(PF_INET,SOCK_STREAM,0);         
-        if(sockfd == -1)                                
-        {                                               
-            fprintf(stderr,"Socket Error,%s:%d\n",      
-                            __FILE__,__LINE__);         
-            close(sockfd);                              
-            return ;                                  
-        } 
- }  
-        
+    // struct sockaddr_in serveraddr;                  
+    //      struct sockaddr_in clientaddr;                  
+    socklen_t addr_len = sizeof(struct sockaddr);   
+    serveraddr.sin_family = AF_INET;                
+    serveraddr.sin_port = htons(port);              
+    serveraddr.sin_addr.s_addr = inet_addr(addr);   
+    memset(&serveraddr.sin_zero, 0, 8);             
+    sockfd = socket(PF_INET,SOCK_STREAM,0);         
+    if(sockfd == -1)                                
+    {                                               
+        fprintf(stderr,"Socket Error,%s:%d\n",      
+                __FILE__,__LINE__);         
+        close(sockfd);                              
+        return ;                                  
+    } 
+}  
+
 void InitServer()                                    
- {
-   debug;
-   int ret = bind( sockfd,                         
-                        (struct sockaddr *)&serveraddr, 
-                        sizeof(struct sockaddr));       
-        if(ret == -1)                                   
-        {                                               
-            fprintf(stderr,"Bind Error,%s:%d\n",        
-                            __FILE__,__LINE__);         
-            close(sockfd);                              
-            exit(-1);                                   
-        }                                               
-        listen(sockfd,MAX_CONNECT_QUEUE);  
- 	
- }
+{
+    debug;
+    int ret = bind( sockfd,                         
+            (struct sockaddr *)&serveraddr, 
+            sizeof(struct sockaddr));       
+    if(ret == -1)                                   
+    {                                               
+        fprintf(stderr,"Bind Error,%s:%d\n",        
+                __FILE__,__LINE__);         
+        close(sockfd);                              
+        exit(-1);                                   
+    }                                               
+    listen(sockfd,MAX_CONNECT_QUEUE);  
+
+}
 
 void InitClient()                                    
 {
-   debug;
+    debug;
     int ret = connect(sockfd,                    
             (struct sockaddr *)&serveraddr,             
             sizeof(struct sockaddr));                   
-        if(ret == -1)                                   
-        {                                               
-            fprintf(stderr,"Connect Error,%s:%d\n",     
+    if(ret == -1)                                   
+    {                                               
+        fprintf(stderr,"Connect Error,%s:%d\n",     
                 __FILE__,__LINE__);                     
-            exit(-1);                                   
-        } 
-	
+        exit(-1);                                   
+    } 
+
 }   
 
+int set_nonblocking(int fd)
+{
+    int opts;
+    opts = fcntl(fd, F_GETFL);
+    if (opts < 0)
+    {
+        printf("fcntl(sockfd, GETFL) error! %s %d\n", __FILE__, __LINE__);
+        exit(-1);
+    }
+
+    opts = opts | O_NONBLOCK;
+    if (fcntl(fd, F_SETFL opts) < 0 )
+    {
+        printf("fcntl(sockfd, SETFL, opts) error! %s %d \n", __FILE__, __LINE__);
+        exit(-1);
+    }
+}
 
 int initialize_service(char *addr, int port)
 {
-	debug;
+    debug;
+    struct epoll_event event;
     PrepareSocket(addr,port);
-	InitServer();
+    epollfd = epoll_create(MAX_CONNECT_FD);
+    set_nonblocking(sockfd);
+    InitServer();
 }
-  
+
 int shutdown_service()
 {
-	debug;
+    debug;
     if(sockfd == -1)
     {
         return -1;
@@ -102,10 +124,10 @@ int shutdown_service()
     close(sockfd);
     return 0;
 }		
-         
+
 ServiceHandler open_remote_service(char *addr, int port)
 {
-	debug;
+    debug;
     PrepareSocket(addr,port);
     InitClient();
     return (ServiceHandler)sockfd;
@@ -113,7 +135,7 @@ ServiceHandler open_remote_service(char *addr, int port)
 
 int close_remote_service(ServiceHandler h)
 {
-	debug;
+    debug;
     if(h <= 0)
     {
         return -1;
@@ -121,10 +143,10 @@ int close_remote_service(ServiceHandler h)
     close(h);
     return 0;
 }
-              
+
 ServiceHandler service_start()
 {
-	debug;
+    debug;
     struct sockaddr_in clientaddr;
     socklen_t addr_len = sizeof(struct sockaddr);
     int newfd = accept( sockfd,(struct sockaddr *)&clientaddr,&addr_len);
@@ -137,7 +159,7 @@ ServiceHandler service_start()
 
 int service_stop(ServiceHandler h)
 {
-	debug;
+    debug;
     if(h <= 0)
     {
         return -1;
@@ -148,7 +170,7 @@ int service_stop(ServiceHandler h)
 
 int send_data(ServiceHandler h, char *buf, int bufSize)
 {
-	debug;
+    debug;
     int ret = send(h,buf,bufSize,0);
     if(ret < 0 || ret != bufSize)
     {
@@ -160,7 +182,7 @@ int send_data(ServiceHandler h, char *buf, int bufSize)
 
 int receive_data(ServiceHandler h, char *buf, int *bufSize)
 {
-	debug;
+    debug;
     int ret = recv(h,buf,*bufSize,0);
     if(ret < 0)
     {
