@@ -37,7 +37,7 @@ Database createNewDB(char *dbName)
 {
 	debug;
     int code;
-    TCHDM *hdb;
+    TCHDB *hdb;
     if (all_opened_db == NULL )
     {
         all_opened_db = tcmdbnew();
@@ -54,15 +54,16 @@ Database createNewDB(char *dbName)
             free (opendb);
             return (Database)hdb;
         }
+    }
 
-	tdb = tchdbnew();
+	hdb = tchdbnew();
 
     //set mutex exclusion
     tchdbsetmutex(hdb);
 
-	if (!tchdbopen(tdb, dbName, HDBOWRITER | HDBOCREAT))
+	if (!tchdbopen(hdb, dbName, HDBOWRITER | HDBOCREAT))
 	{
-		int ecode = tchdbecode(tdb);
+		int ecode = tchdbecode(hdb);
 		fprintf(stderr, "close error: %s\n", tchdberrmsg(ecode));
 		exit(-1);
 	}
@@ -70,7 +71,7 @@ Database createNewDB(char *dbName)
     db.hdb = hdb;
     db.counter = 1;
     tcmdbput(all_opened_db, (void *)dbName, strlen(dbName), (void *)&db, sizeof(mOpenedDB));
-	return (Database) tdb;
+	return (Database) hdb;
 }
 
 /*
@@ -119,6 +120,7 @@ int closeDB(Database db)
     {
         tchdbdel(hdb);
 		return 0;
+    }
 	else
 	{
 		int ecode = tchdbecode(db);
@@ -135,8 +137,7 @@ int putKeyValue(Database db, int key, Data *tdata)
 	debug;
 	int ecode;
 	// printf("server put key value: %d => %s\n", key, tdata->value);
-	if (tchdbput(db, &key, sizeof(int), tdata->value,
-			tdata->length))
+	if (tchdbput(db, &key, sizeof(int), tdata->value, tdata->length))
 		return 0;
 	else
 	{
@@ -226,7 +227,7 @@ int getValueByKey_MDB(Database mdb,int key,Data *value)
 {
     int vsize = -1;
     char *v = tcmdbget((TCMDB*)mdb,(void*)&key,sizeof(int),&vsize);
-    if(v != NULL && vsize > 0 && vsize <= pvalue->len)
+    if(v != NULL && vsize > 0 && vsize <= value->length)
     {
         memcpy(value->value,v,vsize);
         value->length = vsize;

@@ -96,8 +96,8 @@ int set_nonblocking(int fd)
         exit(-1);
     }
 
-    opts = opts | O_NONBLOCK;
-    if (fcntl(fd, F_SETFL opts) < 0 )
+    opts = opts|O_NONBLOCK;
+    if (fcntl(fd, F_SETFL ,opts) < 0 )
     {
         printf("fcntl(sockfd, SETFL, opts) error! %s %d \n", __FILE__, __LINE__);
         exit(-1);
@@ -177,7 +177,7 @@ ServiceHandler service_start()
             close(event.data.fd);
         else
 
-            return (ServiceHandler)newfd;
+            return (ServiceHandler)event.data.fd;
     }                            
 }
 int service_stop(ServiceHandler h)

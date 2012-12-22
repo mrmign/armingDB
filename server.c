@@ -37,9 +37,9 @@
 #define IP_ADDR             "127.0.0.1"
 #define MAX_BUF_LEN         1024
 
-#define MAX_TASK_NUM 1
+#define MAX_TASK_NUM    1
 pthread_t thread_id[MAX_TASK_NUM];
-set_m event[MAX_TASK_NUM];
+sem_t event[MAX_TASK_NUM];
 typedef struct task_node
 {
     ServiceHandler req;// request sockfd
@@ -62,7 +62,7 @@ int random_int(int x)
 Database  mdb = NULL;
 void init_mdb()
 {
-    mdb = creat_MDB();
+    mdb = (Database)create_MDB();
 }
 void close_mdb()
 {
@@ -82,7 +82,7 @@ void detach_sockfd_mdb(int sockfd)
 void get_mdb(int sockfd, Database db)
 {
     Data data;
-    data.str = (char *)&db;
+    data.value = (char *)&db;
     data.length = sizeof(Database);
     getValueByKey_MDB(mdb, sockfd, &data);
 }
@@ -149,12 +149,13 @@ int main()
             }
 
 //        service_stop(h); 
-    }
+        }
         else 
         {
             handle_one_request(h, tnode->buf, tnode->buf_size);
             free(tnode);
         }
+    }
     shutdown_service();
     close_mdb();
     if (MAX_TASK_NUM > 0 )
@@ -193,10 +194,10 @@ int error_response(ServiceHandler h,char * errorinfo)
 }
 
 void printRec(mDataFormat data)
-
+{
     printf("cmd:%d\nnum:%d\nlen1:%d\nvalu1:%s\nlen2:%d\nvalu2:%s\n", data->cmd,data->value_num,data->len_value1,data->value1,data->len_value2,data->value2);
     // printf("%s:%d  %s\n",__FILE__,__LINE__,__FUNCTION__);
-    }
+}
 
 /*
  * handle user's requests
@@ -368,7 +369,7 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
         if(ret == -1)
         {
             error_response(h,"The key NOT FOUND!\n");
-            continue;
+            return -1;
         }            
         BufSize = MAX_BUF_LEN;
         data->value_num = 0;
