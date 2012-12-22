@@ -80,7 +80,7 @@ int deleteValueByKey(Database db, int key);
 
 /**********************************************/
 /* Memory Database(no file) Operations
-/**********************************************/
+**********************************************/
 /*
  * Create an Memory Database
  * input	: None
