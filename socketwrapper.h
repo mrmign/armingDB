@@ -32,6 +32,8 @@
 // #define MAX_BUF_LEN         1024
 #define MAX_CONNECT_QUEUE   128
 typedef int ServiceHandler;
+#define MAX_CONNECT_FD   1024
+#define MAX_LISTEN_QUEUE 4
 /* public api */
 
 /*

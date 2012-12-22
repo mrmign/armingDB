@@ -180,39 +180,39 @@ ServiceHandler service_start()
             return (ServiceHandler)newfd;
     }                            
 }
-    int service_stop(ServiceHandler h)
+int service_stop(ServiceHandler h)
+{
+    debug;
+    if(h <= 0)
     {
-        debug;
-        if(h <= 0)
-        {
-            return -1;
-        }
-        close(h);
-        return 0;   
+        return -1;
     }
+    close(h);
+    return 0;   
+}
 
-    int send_data(ServiceHandler h, char *buf, int bufSize)
+int send_data(ServiceHandler h, char *buf, int bufSize)
+{
+    debug;
+    int ret = send(h,buf,bufSize,0);
+    if(ret < 0 || ret != bufSize)
     {
-        debug;
-        int ret = send(h,buf,bufSize,0);
-        if(ret < 0 || ret != bufSize)
-        {
-            fprintf(stderr,"Send Error,%s:%d\n",__FILE__,__LINE__);
-            return -1;
-        }
-        return ret;
+        fprintf(stderr,"Send Error,%s:%d\n",__FILE__,__LINE__);
+        return -1;
     }
+    return ret;
+}
 
-    int receive_data(ServiceHandler h, char *buf, int *bufSize)
+int receive_data(ServiceHandler h, char *buf, int *bufSize)
+{
+    debug;
+    int ret = recv(h,buf,*bufSize,0);
+    if(ret < 0)
     {
-        debug;
-        int ret = recv(h,buf,*bufSize,0);
-        if(ret < 0)
-        {
-            fprintf(stderr,"Recv Error,%s:%d\n",__FILE__,__LINE__);
-            *bufSize = 0;
-            return -1;
-        }
-        *bufSize = ret;
-        return ret;
+        fprintf(stderr,"Recv Error,%s:%d\n",__FILE__,__LINE__);
+        *bufSize = 0;
+        return -1;
     }
+    *bufSize = ret;
+    return ret;
+}
