@@ -57,7 +57,7 @@ void PrepareSocket(char *addr,int port)
 void InitServer()                                    
 {
     debug;
-    int ret = bind( sockfd,                         
+    int ret = bind( sockfd,                 
             (struct sockaddr *)&serveraddr, 
             sizeof(struct sockaddr));       
     if(ret == -1)                                   
