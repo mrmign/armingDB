@@ -37,8 +37,8 @@ void printRec(mDataFormat data)
 
 Database createNewDB(char *dbName)
 {
-	debug;
-	h = open_remote_service(IP_ADDR,PORT);
+    debug;
+    h = open_remote_service(IP_ADDR,PORT);
     if(h == -1)
     {
         exit(-1);
@@ -54,9 +54,9 @@ Database createNewDB(char *dbName)
     bufSize = format_data(buf, d);
     if (bufSize == 0)
     {
-    	printf("Formatdata error!\n");
+        printf("Formatdata error!\n");
     }
-    
+
     send_data(h,buf,bufSize);
     bufSize = MAX_BUF_LEN;
     receive_data(h,buf,&bufSize);
@@ -74,8 +74,8 @@ Database createNewDB(char *dbName)
  */ 
 int closeDB(Database db)
 {
-	debug;
-	mDataFormat d = (mDataFormat) malloc(sizeof(struct DataFormat));
+    debug;
+    mDataFormat d = (mDataFormat) malloc(sizeof(struct DataFormat));
     d->cmd = CLOSE_CMD;
     d->value_num = 0;
 
@@ -84,12 +84,12 @@ int closeDB(Database db)
     bufSize = format_data(buf, d);
     if (bufSize == 0)
     {
-    	printf("Formatdata error!\n");
+        printf("Formatdata error!\n");
     }
-    
-    send_data(h,buf,bufSize);
+
+    send_data(*(ServiceHandler *)db,buf,bufSize);
     bufSize = MAX_BUF_LEN;
-    receive_data(h,buf,&bufSize);
+    receive_data(*(ServiceHandler *)db,buf,&bufSize);
     parse_data(buf, d);
 
     if(d->cmd != CLOSE_CMD)
@@ -108,7 +108,7 @@ int closeDB(Database db)
  */
 int putKeyValue(Database db, int key, Data *tdata)
 {
-	mDataFormat d = (mDataFormat) malloc(sizeof(struct DataFormat));
+    mDataFormat d = (mDataFormat) malloc(sizeof(struct DataFormat));
     d->cmd = SET_CMD;
     d->value_num = 2;
     d->len_value2 = strlen(tdata->value);
@@ -122,17 +122,17 @@ int putKeyValue(Database db, int key, Data *tdata)
     bufSize = format_data(buf, d);
     if (bufSize == 0)
     {
-    	printf("Formatdata error!\n");
+        printf("Formatdata error!\n");
     }
-    
-    send_data(h,buf,bufSize);
+
+    send_data(*(ServiceHandler *)db,buf,bufSize);
     bufSize = MAX_BUF_LEN;
-    receive_data(h,buf,&bufSize);
+    receive_data(*(ServiceHandler *)db,buf,&bufSize);
     parse_data(buf, d);
     if(d->cmd != SET_CMD)
     {
         fprintf(stderr,"Remote DBCreate Error,%s:%d\n", __FILE__,__LINE__);
-       free(d);
+        free(d);
         return -1;
     } 
     free(d);
@@ -143,30 +143,30 @@ int putKeyValue(Database db, int key, Data *tdata)
  */
 int getValueByKey(Database db, int key, Data *result)
 {
-	mDataFormat d = (mDataFormat) malloc(sizeof(struct DataFormat));
+    mDataFormat d = (mDataFormat) malloc(sizeof(struct DataFormat));
     d->cmd = GET_CMD;
     d->value_num = 1;
 
     d->len_value1 = sizeof(int);
     d->value1 = (char *)&key;
-    
+
     char buf[MAX_BUF_LEN] = "\0";
     int bufSize = 0;
     bufSize = format_data(buf, d);
     if (bufSize == 0)
     {
-    	printf("Formatdata error!\n");
+        printf("Formatdata error!\n");
     }
-    
-    send_data(h,buf,bufSize);
+
+    send_data(*(ServiceHandler *)db,buf,bufSize);
     bufSize = MAX_BUF_LEN;
     char value[MAX_BUF_LEN] = "\0";
     d->value1 = value;
-    receive_data(h,buf,&bufSize);
+    receive_data(*(ServiceHandler *)db,buf,&bufSize);
     parse_data(buf, d);
 
     // printRec(d);
-    
+
     result->length = d->len_value1;
     strncpy(result->value, d->value1, result->length);
 
@@ -186,7 +186,7 @@ int getValueByKey(Database db, int key, Data *result)
  */
 int deleteValueByKey(Database db, int key)
 {
-	mDataFormat d = (mDataFormat) malloc(sizeof(struct DataFormat));
+    mDataFormat d = (mDataFormat) malloc(sizeof(struct DataFormat));
     d->cmd = DEL_CMD;
     d->value_num = 1;
     // char keybuf[5] = "\0";
@@ -195,22 +195,24 @@ int deleteValueByKey(Database db, int key)
     // d->value1 = keybuf;
     d->len_value1 = sizeof(int);
     d->value1 = (char *)&key;
-    
+
     char buf[MAX_BUF_LEN] = "\0";
     int bufSize = 0;
     bufSize = format_data(buf, d);
     if (bufSize == 0)
     {
-    	printf("Formatdata error!\n");
+        printf("Formatdata error!\n");
+        free(d);
+        return -1;
     }
-    
-    send_data(h,buf,bufSize);
+
+    send_data(*(ServiceHandler *)db,buf,bufSize);
     bufSize = MAX_BUF_LEN;
-    receive_data(h,buf,&bufSize);
+    receive_data(*(ServiceHandler *)db,buf,&bufSize);
     parse_data(buf, d);
     if(d->cmd != DEL_CMD)
     {
-        fprintf(stderr,"Remote DBCreate Error,%s:%d\n", __FILE__,__LINE__);
+        fprintf(stderr,"Remote Delete Error,%s:%d\n", __FILE__,__LINE__);
         free(d);
         return -1;
     } 
