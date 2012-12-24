@@ -45,22 +45,22 @@ int exeCmd(char *str);
 
 int main(int argc, char **argv)
 {
-	
-	
 
-	char buf[MAX];
-	int i =3;
-	
-	while(1)
-	{
-		if(getLine(buf,MAX)==0)
-			continue;
-		else
-		{
-			exeCmd(buf);
-		}
 
-	}
+
+    char buf[MAX];
+    int i =3;
+
+    while(1)
+    {
+        if(getLine(buf,MAX)==0)
+            continue;
+        else
+        {
+            exeCmd(buf);
+        }
+
+    }
 }
 
 /*
@@ -68,19 +68,19 @@ int main(int argc, char **argv)
  */
 int getLine(char *buf, int size)
 {
-	debug;
+    debug;
 
     unsigned int length = 1; // record the input size
-	printf("%s%s>>",name,dbname);
-	// length = fgets(buf,size,stdin);
-	fgets(buf,size,stdin);
-	// buf[length] = '\0';
+    printf("%s%s>>",name,dbname);
+    // length = fgets(buf,size,stdin);
+    fgets(buf,size,stdin);
+    // buf[length] = '\0';
 
-	if(length==0)
-		return 0;
-	else
-		return length;
-	
+    if(length==0)
+        return 0;
+    else
+        return length;
+
 }
 
 /*
@@ -124,9 +124,9 @@ int check(char *pat, char *str)
     }
     else
     {
-       // printf("%s %u %u\n",substr(str,pm[0].rm_so,pm[0].rm_eo),pm[0].rm_so,pm[0].rm_eo);
+        // printf("%s %u %u\n",substr(str,pm[0].rm_so,pm[0].rm_eo),pm[0].rm_so,pm[0].rm_eo);
 
-        
+
         return 0;
     }
 }
@@ -140,7 +140,7 @@ int exeCmd(char *str)
     debug;
     if (check("[a-zA-Z]+",str) != 0)
         return;
-    
+
     substr(str,cmd,pm[0].rm_so,pm[0].rm_eo);
     // printf("%s %u %u\n",cmd,pm[0].rm_so,pm[0].rm_eo);
 
@@ -148,117 +148,117 @@ int exeCmd(char *str)
     {
         if(db)
         {
-        	printf("please close %s first!\n", dbname);
+            printf("please close %s first!\n", dbname);
         }
         else
         {
-        	unsigned pre = pm[0].rm_eo;
-        	check("\\w+\\.\\w+",str+pm[0].rm_eo);
-	        substr(str,dbname,pre+pm[0].rm_so,pre+pm[0].rm_eo);
-	        db = createNewDB(dbname);
-	        // printf("%s%s", name,dbname);
+            unsigned pre = pm[0].rm_eo;
+            check("\\w+\\.\\w+",str+pm[0].rm_eo);
+            substr(str,dbname,pre+pm[0].rm_so,pre+pm[0].rm_eo);
+            db = createNewDB(dbname);
+            // printf("%s%s", name,dbname);
         }
         debug;
     }
     else if(strcmp(cmd,"close") == 0)
     {
-    	if(db)
-    	{
-    		closeDB(db);
-    		db = NULL;
-    	}
-    	dbname[0] = '\0';
+        if(db)
+        {
+            closeDB(db);
+            db = NULL;
+        }
+        dbname[0] = '\0';
     }
     else if(strcmp(cmd,"set") == 0)
     {
-    	if(db == NULL)
-    	{
-    		printf("Please open db first!\n");
-    		return;
-    	}	
-    	unsigned pre = pm[0].rm_eo;// record the previous end
-    	check("[0-9]+",str+pm[0].rm_eo);
-    	substr(str,key,pre + pm[0].rm_so,pre + pm[0].rm_eo);
-    	
-    	int key_v = atoi(key);
+        if(db == NULL)
+        {
+            printf("Please open db first!\n");
+            return;
+        }	
+        unsigned pre = pm[0].rm_eo;// record the previous end
+        check("[0-9]+",str+pm[0].rm_eo);
+        substr(str,key,pre + pm[0].rm_so,pre + pm[0].rm_eo);
 
-    	pre += pm[0].rm_eo;
-    	// check(".*",str+pm[0].rm_eo);
+        int key_v = atoi(key);
+
+        pre += pm[0].rm_eo;
+        // check(".*",str+pm[0].rm_eo);
         // substr(str,value,pre + pm[0].rm_so,pre + pm[0].rm_eo);
         check("\\S+",str+pre);
 
-    	substr(str,value,pre + pm[0].rm_so,strlen(str));
+        substr(str,value,pre + pm[0].rm_so,strlen(str));
 
-    	Data tdata;
-    	tdata.length = strlen(value);
-    	tdata.value = value;
-    	// printf("%d-%s\n",key_v,value );
-    	if(putKeyValue(db,key_v,&tdata) != 0)
-    	{
-    		printf("ERROR:set %d %s\n",key_v,value);
-    	}	
+        Data tdata;
+        tdata.length = strlen(value);
+        tdata.value = value;
+        // printf("%d-%s\n",key_v,value );
+        if(putKeyValue(db,key_v,&tdata) != 0)
+        {
+            printf("ERROR:set %d %s\n",key_v,value);
+        }	
 
     }
     else if(strcmp(cmd,"get") == 0)
     {
-    	if(db == NULL)
-    	{
-    		printf("Please open db first!\n" );
-    		return;
-    	}	
+        if(db == NULL)
+        {
+            printf("Please open db first!\n" );
+            return;
+        }	
 
-    	unsigned pre = pm[0].rm_eo;
-    	check("[0-9]+",str+pm[0].rm_eo);
-    	substr(str,key,pre + pm[0].rm_so,pre + pm[0].rm_eo);
-    	int key_v = atoi(key);
-    	char get[MAX]="\0";
-    	Data tdata;
-    	tdata.value = get;
-    	if(getValueByKey(db,key_v,&tdata)==0)
-    	{
-    		printf("%d => %s\n", key_v,tdata.value);
-    	}
-    	else
-    	{
-    		printf("ERROR:get %d Not found!\n",key_v);
-    	}
+        unsigned pre = pm[0].rm_eo;
+        check("[0-9]+",str+pm[0].rm_eo);
+        substr(str,key,pre + pm[0].rm_so,pre + pm[0].rm_eo);
+        int key_v = atoi(key);
+        char get[MAX]="\0";
+        Data tdata;
+        tdata.value = get;
+        if(getValueByKey(db,key_v,&tdata)==0)
+        {
+            printf("%d => %s\n", key_v,tdata.value);
+        }
+        else
+        {
+            printf("ERROR:get %d Not found!\n",key_v);
+        }
     }
     else if(strcmp(cmd,"delete") == 0)
     {
-    	if(db == NULL)
-    	{
-    		printf("Please open db first!\n" );
-    		return;
-    	}	
-    	unsigned pre = pm[0].rm_eo;
-    	check("[0-9]+",str+pm[0].rm_eo);
-    	substr(str,key,pre + pm[0].rm_so,pre + pm[0].rm_eo);
-    	int key_v = atoi(key);
-    	if(deleteValueByKey(db,key_v) != 0)
-    		printf("ERROR:delete %d\n",key_v);
+        if(db == NULL)
+        {
+            printf("Please open db first!\n" );
+            return;
+        }	
+        unsigned pre = pm[0].rm_eo;
+        check("[0-9]+",str+pm[0].rm_eo);
+        substr(str,key,pre + pm[0].rm_so,pre + pm[0].rm_eo);
+        int key_v = atoi(key);
+        if(deleteValueByKey(db,key_v) != 0)
+            printf("ERROR:delete %d\n",key_v);
     }
     else if(strcmp(cmd,"help") == 0)
     {
-    	printf("open filename - EX:open db.hdb\n"); 
+        printf("open filename - EX:open db.hdb\n"); 
         printf("set key value - EX:set 100 helloworld\n");
         printf("get key       - EX:get 100\n");
         printf("delete key    - EX:delete 100\n");
         printf("close         - leave nezha.hdb\n"); 
         printf("help          - list cmds info\n"); 
         printf("exit          - exit\n"); 
-    
+
     }
     else if(strcmp(cmd,"exit") == 0)
     {
-    	if(db)
-    	{
-    		closeDB(db);
-    	}
-    	exit(0);
+        if(db)
+        {
+            closeDB(db);
+        }
+        exit(0);
     }
     else
     {
-    	printf("Unknow Command!\n"); 
+        printf("Unknow Command!\n"); 
     }
     return 0;
 

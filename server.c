@@ -116,7 +116,7 @@ int main()
     /* 
      * command line console
      */
-     
+
     init_mdb();
 
     ServiceHandler h = -1;
@@ -124,7 +124,7 @@ int main()
     while(1)
     {
         h = service_start();
-//        handle_request(h);  
+        //        handle_request(h);  
         task_node_t *tnode = malloc( sizeof(task_node_t));
         tnode->buf_size = MAX_BUF_LEN;
         if (receive_data (h, tnode->buf, &(tnode->buf_size)) == 0)
@@ -153,7 +153,7 @@ int main()
             }
             sem_post(&event[i]);
 
-//        service_stop(h); 
+            //        service_stop(h); 
         }
         else 
         {
@@ -171,9 +171,9 @@ int main()
             task_node_t *q;
             while (p)
             {
-               q = p->next;
-               free(p);
-               p = q;
+                q = p->next;
+                free(p);
+                p = q;
             }
         }
     }
@@ -219,9 +219,9 @@ int handle_requests(int task_num)
         pnode = task_list[i];
         h = pnode->req;
 
-       // if (handle_one_request(h, pnode->buf, pnode->buf_size) == -1)
-       //     continue;
-       handle_one_request(h, pnode->buf, pnode->buf_size);     
+        // if (handle_one_request(h, pnode->buf, pnode->buf_size) == -1)
+        //     continue;
+        handle_one_request(h, pnode->buf, pnode->buf_size);     
 
         /* deal with pnode and its next node */
         if (pnode->next == NULL)

@@ -35,7 +35,7 @@ typedef struct opened_db
 }mOpenedDB;
 Database createNewDB(char *dbName)
 {
-	debug;
+    debug;
     int code;
     TCHDB *hdb;
     if (all_opened_db == NULL )
@@ -56,22 +56,22 @@ Database createNewDB(char *dbName)
         }
     }
 
-	hdb = tchdbnew();
+    hdb = tchdbnew();
 
     //set mutex exclusion
     tchdbsetmutex(hdb);
 
-	if (!tchdbopen(hdb, dbName, HDBOWRITER | HDBOCREAT))
-	{
-		int ecode = tchdbecode(hdb);
-		fprintf(stderr, "close error: %s\n", tchdberrmsg(ecode));
-		exit(-1);
-	}
+    if (!tchdbopen(hdb, dbName, HDBOWRITER | HDBOCREAT))
+    {
+        int ecode = tchdbecode(hdb);
+        fprintf(stderr, "close error: %s\n", tchdberrmsg(ecode));
+        exit(-1);
+    }
     mOpenedDB db;
     db.hdb = hdb;
     db.counter = 1;
     tcmdbput(all_opened_db, (void *)dbName, strlen(dbName), (void *)&db, sizeof(mOpenedDB));
-	return (Database) hdb;
+    return (Database) hdb;
 }
 
 /*
@@ -79,7 +79,7 @@ Database createNewDB(char *dbName)
  */ 
 int closeDB(Database db)
 {
-	debug;
+    debug;
     TCHDB *hdb = (TCHDB *)db;
     int code;
     int i;
@@ -116,17 +116,17 @@ int closeDB(Database db)
     }
 
 
-	if (tchdbclose(db))
+    if (tchdbclose(db))
     {
         tchdbdel(hdb);
-		return 0;
+        return 0;
     }
-	else
-	{
-		int ecode = tchdbecode(db);
-		fprintf(stderr, "close error: %s\n", tchdberrmsg(ecode));
-		return -1;
-	}
+    else
+    {
+        int ecode = tchdbecode(db);
+        fprintf(stderr, "close error: %s\n", tchdberrmsg(ecode));
+        return -1;
+    }
 }
 
 /*
@@ -134,43 +134,43 @@ int closeDB(Database db)
  */
 int putKeyValue(Database db, int key, Data *tdata)
 {
-	debug;
-	int ecode;
-	 debug_argv("server put key value: %d => %s\n", key, tdata->value);
-	if (tchdbput(db, &key, sizeof(int), tdata->value, tdata->length))
-		return 0;
-	else
-	{
-		ecode = tchdbecode(db);
-		fprintf(stderr, "insert error: %s\n", tchdberrmsg(ecode));
-		return -1;
-	}
+    debug;
+    int ecode;
+    debug_argv("server put key value: %d => %s\n", key, tdata->value);
+    if (tchdbput(db, &key, sizeof(int), tdata->value, tdata->length))
+        return 0;
+    else
+    {
+        ecode = tchdbecode(db);
+        fprintf(stderr, "insert error: %s\n", tchdberrmsg(ecode));
+        return -1;
+    }
 }
 /*
  * get value with the key
  */
 int getValueByKey(Database db, int key, Data *result)
 {
-	debug;
-	int ecode;
-	int count;
-	debug_argv("server get key: %d\n", key);
-	count = tchdbget3(db, &key, sizeof(int), result->value, 1024);
-	if (count == -1)
-	{
-		ecode = tchdbecode(db);
-		fprintf(stderr, "get error: %s\n", tchdberrmsg(ecode));
-		return -1;
-	}
-	else
-	{
-		result->length = count;
-		result->value[count] = '\0';
+    debug;
+    int ecode;
+    int count;
+    debug_argv("server get key: %d\n", key);
+    count = tchdbget3(db, &key, sizeof(int), result->value, 1024);
+    if (count == -1)
+    {
+        ecode = tchdbecode(db);
+        fprintf(stderr, "get error: %s\n", tchdberrmsg(ecode));
+        return -1;
+    }
+    else
+    {
+        result->length = count;
+        result->value[count] = '\0';
 
-		// printf("server getvalue: count:%d  value: %d => %s\n",count, key, result->value);
-		return 0;
-		
-	}
+        // printf("server getvalue: count:%d  value: %d => %s\n",count, key, result->value);
+        return 0;
+
+    }
 
 }
 
@@ -179,18 +179,18 @@ int getValueByKey(Database db, int key, Data *result)
  */
 int deleteValueByKey(Database db, int key)
 {
-	
-	debug;
-	int ecode;
-    debug_argv("delete key:%d\n",key);
-	if (!tchdbout(db, &key, sizeof(key)))
-	{
-		ecode = tchdbecode(db);
-		fprintf(stderr, "delete error: %s\n", tchdberrmsg(ecode));
-		return -1;
-	}
 
-	return 0;
+    debug;
+    int ecode;
+    debug_argv("delete key:%d\n",key);
+    if (!tchdbout(db, &key, sizeof(key)))
+    {
+        ecode = tchdbecode(db);
+        fprintf(stderr, "delete error: %s\n", tchdberrmsg(ecode));
+        return -1;
+    }
+
+    return 0;
 }
 
 /*
@@ -201,7 +201,7 @@ Database  create_MDB()
     TCMDB * mdb = tcmdbnew();
     return (Database)mdb;
 }
-    
+
 /*
  * Delete the Database
  */
