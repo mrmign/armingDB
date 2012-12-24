@@ -9,7 +9,7 @@ client: socketwrapper.o protocol.o remoteDBApi.o client.o
 	gcc -o $@ $^ -ltokyocabinet
 #server
 server: socketwrapper.o protocol.o dbApi.o server.o
-	gcc -o $@ $^ -ltokyocabinet
+	gcc -g -o $@ $^ -ltokyocabinet
 arming:	dbApi.o client.o
 	gcc -o $@ $^ -ltokyocabinet
 
