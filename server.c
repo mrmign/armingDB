@@ -62,7 +62,7 @@ int random_int(int x)
 Database  mdb = NULL;
 void init_mdb()
 {
-    mdb = (Database)create_MDB();
+    mdb = create_MDB();
 }
 void close_mdb()
 {
@@ -70,6 +70,7 @@ void close_mdb()
 }
 void match_sockfd_mdb(int sockfd, Database db)
 {
+    debug_argv("sock:%d\n", sockfd);
     Data data;
     data.value = (char *)&db;
     data.length = sizeof(Database);
@@ -79,12 +80,15 @@ void detach_sockfd_mdb(int sockfd)
 {
     deleteValueByKey_MDB(mdb, sockfd);
 }
-void get_mdb(int sockfd, Database db)
+void get_mdb(int sockfd, Database* db)
 {
+    char val[1024] = "\0";
     Data data;
-    data.value = (char *)&db;
+    data.value = (char *)db;
     data.length = sizeof(Database);
+    debug_argv("key:%d\n",sockfd);
     getValueByKey_MDB(mdb, sockfd, &data);
+    debug_argv("db:%p\n",*data.value);
 }
 
 int handle_requests(int task_num);
@@ -147,6 +151,7 @@ int main()
                 p->last = tnode;
                 tnode->next = NULL;
             }
+            sem_post(&event[i]);
 
 //        service_stop(h); 
         }
@@ -226,7 +231,6 @@ int handle_requests(int task_num)
             task_list[i] = p;
         }
         free(pnode);
-        sem_post(&event[i]);
     }
 }
 
@@ -276,6 +280,7 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
     {
         debug;
         Database db = createNewDB(data->value1);
+        debug_argv("db:%p\n",db);
         match_sockfd_mdb(h, db);
         BufSize = MAX_BUF_LEN;
         data->value_num = 0;
@@ -286,7 +291,7 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
     else if(data->cmd == CLOSE_CMD)
     {
         Database db = NULL;
-        get_mdb(h, db);
+        get_mdb(h, &db);
         closeDB(db);
         BufSize = MAX_BUF_LEN;
         data->value_num = 0;
@@ -303,14 +308,14 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
           }*/
 
         Database db = NULL;
-        get_mdb(h, db);
+        get_mdb(h, &db);
         int key = *(int *)data->value1;
         Data value;
 
         char tem[MAX_BUF_LEN] = "\0";
         value.value = tem;
         ret = getValueByKey(db, key, &value);
-        // printf("server getdata value => %s\n", value.value);
+        printf("server getdata value => %s\n", value.value);
         if(ret == -1)
         {
             error_response(h,"The key NOT FOUND!\n");
@@ -342,7 +347,8 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
         // debug("SET_CMD:%d -> %s\n",*(tKey*)(Buf + 12),(char*)(Buf + 20));
         // debug("SET_CMD:%d -> %s\n",key,value.str);
         Database db = NULL;
-        get_mdb(h, db);
+        get_mdb(h, &db);
+        debug_argv("get db:%p\n",db);
         ret = putKeyValue(db,key,&value);
         if (ret == -1)
         {
@@ -364,7 +370,7 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
           }*/
         int key = *(int *)data->value1;;           
         Database db = NULL;
-        get_mdb(h, db);
+        get_mdb(h, &db);
         ret = deleteValueByKey(db,key);
         if(ret == -1)
         {
