@@ -248,21 +248,17 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
     mDataFormat data = (mDataFormat) malloc(sizeof(struct DataFormat));
     data->value1 = Data1;
     data->value2 = Data2;
-    /* Handle Requests of One Client */
-    //    while(1)
-    //    {
-    //        BufSize = MAX_BUF_LEN;
 
     memset(Data1, 0, MAX_BUF_LEN);
     memset(Data2, 0, MAX_BUF_LEN);
     data->value1 = Data1;
     data->value2 = Data2;
 
-    /*        if(receive_data(h,Buf,&BufSize) == 0)
-              {
-              fprintf(stderr,"Connection Error,%s:%d\n",__FILE__,__LINE__);
-              return -1;            
-              }*/
+    /*if(receive_data(h,Buf,&BufSize) == 0)
+      {
+          fprintf(stderr,"Connection Error,%s:%d\n",__FILE__,__LINE__);
+          return -1;            
+      }*/
     if(BufSize == 0)
     {
         free(data);
@@ -309,11 +305,6 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
     }
     else if(data->cmd == GET_CMD)
     {
-        /*if(Data1Size != sizeof(tKey))
-          {
-          fprintf(stderr,"Data Format Error,%s:%d\n",__FILE__,__LINE__);
-          continue;            
-          }*/
         Database db = NULL;
         get_mdb(h, &db);
 
@@ -324,7 +315,7 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
         char tem[MAX_BUF_LEN] = "\0";
         value.value = tem;
         ret = getValueByKey(db, key, &value);
-        printf("server getdata value => %s\n", value.value);
+       // printf("server getdata value => %s\n", value.value);
         if(ret == -1)
         {
             error_response(h,"The key NOT FOUND!\n");
@@ -338,24 +329,13 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
         BufSize = format_data(Buf,data);
         send_data(h,Buf,BufSize);
 
-        // Buf[0]=0;
-        // Data1[0]=0;
-        // Data2[0]=0;
     }
     else if(data->cmd == SET_CMD)
     {
-        /*if(Data1Size != sizeof(tKey))
-          {
-          fprintf(stderr,"Data Format Error,%s:%d\n",__FILE__,__LINE__);
-          continue;            
-          }*/
         int key = *(int *)data->value1;
         Data value;
-        // value.len = Data2Size;
         value.value = data->value2;
         value.length = data->len_value2;
-        // debug("SET_CMD:%d -> %s\n",*(tKey*)(Buf + 12),(char*)(Buf + 20));
-        // debug("SET_CMD:%d -> %s\n",key,value.str);
         Database db = NULL;
         get_mdb(h, &db);
         debug_argv("set: db:%p\n",db);
@@ -375,11 +355,6 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
     }
     else if(data->cmd == DEL_CMD)
     {
-        /*if(Data1Size != sizeof(tKey))
-          {
-          fprintf(stderr,"Data Format Error,%s:%d\n",__FILE__,__LINE__);
-          continue;            
-          }*/
         int key = *(int *)data->value1;;           
         Database db = NULL;
         get_mdb(h, &db);
@@ -401,6 +376,5 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
         printf("Unknow Request!\n");
         error_response(h, "Unknow Request!\n");
     }                                   
-    //    }    
     free(data);
 }
