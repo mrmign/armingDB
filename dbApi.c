@@ -136,7 +136,7 @@ int putKeyValue(Database db, int key, Data *tdata)
 {
 	debug;
 	int ecode;
-	 printf("server put key value: %d => %s\n", key, tdata->value);
+	 debug_argv("server put key value: %d => %s\n", key, tdata->value);
 	if (tchdbput(db, &key, sizeof(int), tdata->value, tdata->length))
 		return 0;
 	else
@@ -154,7 +154,7 @@ int getValueByKey(Database db, int key, Data *result)
 	debug;
 	int ecode;
 	int count;
-	// printf("server get key: %d\n", key);
+	debug_argv("server get key: %d\n", key);
 	count = tchdbget3(db, &key, sizeof(int), result->value, 1024);
 	if (count == -1)
 	{
@@ -182,7 +182,7 @@ int deleteValueByKey(Database db, int key)
 	
 	debug;
 	int ecode;
-
+    debug_argv("delete key:%d\n",key);
 	if (!tchdbout(db, &key, sizeof(key)))
 	{
 		ecode = tchdbecode(db);
