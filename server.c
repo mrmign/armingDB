@@ -195,6 +195,7 @@ int error_response(ServiceHandler h,char * errorinfo)
 
     BufSize = format_data(Buf, data);
     send_data(h,Buf,BufSize);
+    free(data);
     return 0;    
 }
 
@@ -218,8 +219,9 @@ int handle_requests(int task_num)
         pnode = task_list[i];
         h = pnode->req;
 
-        if (handle_one_request(h, pnode->buf, pnode->buf_size) == -1)
-            continue;
+       // if (handle_one_request(h, pnode->buf, pnode->buf_size) == -1)
+       //     continue;
+       handle_one_request(h, pnode->buf, pnode->buf_size);     
 
         /* deal with pnode and its next node */
         if (pnode->next == NULL)
@@ -263,6 +265,7 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
               }*/
     if(BufSize == 0)
     {
+        free(data);
         return -1;
     }
     int ret = parse_data(buf,data);
@@ -274,13 +277,14 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
     {
         error_response(h,"Data Format Error!\n");
         printf("server parse_data error!\n");
+        free(data);
         return -1;
     }
     if(data->cmd == OPEN_CMD)
     {
         debug;
         Database db = createNewDB(data->value1);
-        debug_argv("db:%p\n",db);
+        debug_argv("open db:%p\n",db);
         match_sockfd_mdb(h, db);
         BufSize = MAX_BUF_LEN;
         data->value_num = 0;
@@ -290,6 +294,7 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
     }
     else if(data->cmd == CLOSE_CMD)
     {
+        debug_argv("close db\n");
         Database db = NULL;
         get_mdb(h, &db);
         closeDB(db);
@@ -297,6 +302,9 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
         data->value_num = 0;
         BufSize = format_data(Buf,data);
         send_data(h,Buf,BufSize);
+        detach_sockfd_mdb(h);
+        service_stop(h);
+        free(data);
         return 0;
     }
     else if(data->cmd == GET_CMD)
@@ -306,9 +314,10 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
           fprintf(stderr,"Data Format Error,%s:%d\n",__FILE__,__LINE__);
           continue;            
           }*/
-
         Database db = NULL;
         get_mdb(h, &db);
+
+        //debug_argv("get db:%p\n",db);
         int key = *(int *)data->value1;
         Data value;
 
@@ -319,6 +328,7 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
         if(ret == -1)
         {
             error_response(h,"The key NOT FOUND!\n");
+            free(data);
             return -1;              
         }
         BufSize = MAX_BUF_LEN;
@@ -348,12 +358,14 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
         // debug("SET_CMD:%d -> %s\n",key,value.str);
         Database db = NULL;
         get_mdb(h, &db);
-        debug_argv("get db:%p\n",db);
+        debug_argv("set: db:%p\n",db);
         ret = putKeyValue(db,key,&value);
         if (ret == -1)
         {
             error_response(h,"Save key & value error!\n");
             printf("set error : %d, %s\n", key, value.value);
+            free(data);
+            return -1;
         }
         BufSize = MAX_BUF_LEN;
         data->value_num = 0;
@@ -371,10 +383,12 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
         int key = *(int *)data->value1;;           
         Database db = NULL;
         get_mdb(h, &db);
+        debug_argv("delete: db:%p\n",db);
         ret = deleteValueByKey(db,key);
         if(ret == -1)
         {
             error_response(h,"The key NOT FOUND!\n");
+            free(data);
             return -1;
         }            
         BufSize = MAX_BUF_LEN;
@@ -388,4 +402,5 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
         error_response(h, "Unknow Request!\n");
     }                                   
     //    }    
+    free(data);
 }
