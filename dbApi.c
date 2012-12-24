@@ -136,7 +136,7 @@ int putKeyValue(Database db, int key, Data *tdata)
 {
 	debug;
 	int ecode;
-	// printf("server put key value: %d => %s\n", key, tdata->value);
+	 printf("server put key value: %d => %s\n", key, tdata->value);
 	if (tchdbput(db, &key, sizeof(int), tdata->value, tdata->length))
 		return 0;
 	else
@@ -216,6 +216,7 @@ int delete_MDB(Database mdb)
  */ 
 int putKeyValue_MDB(Database mdb,int key,Data value)
 {
+    debug_argv("key: %d db: %p\n", key, *value.value);
     tcmdbput((TCMDB*)mdb,(void*)&key,sizeof(int),value.value,value.length); 
     return 0;  
 }
@@ -227,6 +228,7 @@ int getValueByKey_MDB(Database mdb,int key,Data *value)
 {
     int vsize = -1;
     char *v = tcmdbget((TCMDB*)mdb,(void*)&key,sizeof(int),&vsize);
+    debug_argv("key: %d db:%p\n",key,*v);
     if(v != NULL && vsize > 0 && vsize <= value->length)
     {
         memcpy(value->value,v,vsize);
