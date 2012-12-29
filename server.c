@@ -37,7 +37,7 @@
 #define IP_ADDR             "127.0.0.1"
 #define MAX_BUF_LEN         1024
 
-#define MAX_TASK_NUM    1
+#define MAX_TASK_NUM    3
 pthread_t thread_id[MAX_TASK_NUM];
 sem_t event[MAX_TASK_NUM];
 typedef struct task_node
@@ -94,10 +94,22 @@ void get_mdb(int sockfd, Database* db)
 int handle_requests(int task_num);
 int handle_one_request(ServiceHandler h, char *buf, int buf_size);
 
-int main()
+int main(int argc, char **argv)
 {
     /* Server Engine for Client's Connections */
     printf(" Arming Database Server starts!\n");
+    char *addr;
+    int port;
+    if(argc < 3)
+    {
+        addr = IP_ADDR;
+        port = PORT;
+    }
+    else
+    {
+        addr = argv[1];
+        port = atoi(argv[2]);
+    }
     int i;
     if(MAX_TASK_NUM > 0)
     {
@@ -120,7 +132,7 @@ int main()
     init_mdb();
 
     ServiceHandler h = -1;
-    initialize_service(IP_ADDR,PORT);
+    initialize_service(addr,port);
     while(1)
     {
         h = service_start();
