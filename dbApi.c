@@ -25,9 +25,10 @@
 #include <string.h>
 #include "dbApi.h"
 #include "debug.h"
+#include <pthread.h>
 
 TCMDB *all_opened_db = NULL;
-
+pthread_mutex_t dbmutex;
 typedef struct opened_db
 {
     TCHDB *hdb;
@@ -41,19 +42,23 @@ Database createNewDB(char *dbName)
     if (all_opened_db == NULL )
     {
         all_opened_db = tcmdbnew();
+        pthread_mutex_init(&dbmutex, NULL);
     }
     else
     {
         int vsize = -1;
+        pthread_mutex_lock(&dbmutex);
         mOpenedDB *opendb = (mOpenedDB *)tcmdbget(all_opened_db, (void *)dbName, strlen(dbName), &vsize);
         if(opendb != NULL)
         {
             hdb = opendb->hdb;
             opendb->counter ++;
             tcmdbput(all_opened_db, (void *)dbName, strlen(dbName), (void *)opendb, vsize);
+           // pthread_mutex_unlock(&dbmutex);
             free (opendb);
             return (Database)hdb;
         }
+        pthread_mutex_unlock(&dbmutex);
     }
 
     hdb = tchdbnew();
@@ -61,7 +66,7 @@ Database createNewDB(char *dbName)
     //set mutex exclusion
     tchdbsetmutex(hdb);
 
-    if (!tchdbopen(hdb, dbName, HDBOWRITER | HDBOCREAT))
+    if (!tchdbopen(hdb, dbName, HDBOWRITER | HDBOCREAT | HDBONOLCK))
     {
         int ecode = tchdbecode(hdb);
         fprintf(stderr, "close error: %s\n", tchdberrmsg(ecode));
@@ -95,6 +100,7 @@ int closeDB(Database db)
             break;
         }
         int vsize = -1;
+        pthread_mutex_lock(&dbmutex);
         mOpenedDB *opendb = (mOpenedDB *)tcmdbget(all_opened_db, (void *)dbname, ksize, &vsize);
         if(opendb != NULL && opendb->hdb == hdb)
         {
@@ -111,6 +117,7 @@ int closeDB(Database db)
             free(opendb);
             return 0;
         }
+        pthread_mutex_unlock(&dbmutex);
         free(dbname);
         free(opendb);
     }
