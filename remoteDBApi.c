@@ -17,7 +17,7 @@
  *
  */
 #include "debug.h"
-#include "dbApi.h"
+#include "remoteDBApi.h"
 #include "protocol.h"
 #include "socketwrapper.h"
 #include <stdio.h>
@@ -28,17 +28,17 @@
 #define IP_ADDR             "127.0.0.1"
 #define MAX_BUF_LEN         1024
 
-ServiceHandler h = -1;
+//ServiceHandler h = -1;
 
 void printRec(mDataFormat data)
 {
     printf("cmd:%d\nnum:%d\nlen1:%d\nvalu1:%s\nlen2:%d\nvalu2:%s\n", data->cmd,data->value_num,data->len_value1,data->value1,data->len_value2,data->value2);
 }
 
-Database createNewDB(char *dbName)
+int remote_create_new_db(char *dbName, char *addr, int port)
 {
     debug;
-    h = open_remote_service(IP_ADDR,PORT);
+   ServiceHandler h = open_remote_service(addr,port);
     if(h == -1)
     {
         exit(-1);
@@ -66,13 +66,13 @@ Database createNewDB(char *dbName)
         fprintf(stderr,"Remote DBCreate Error,%s:%d\n", __FILE__,__LINE__);
     }
     free(d);
-    return (Database)&h;
+    return h;
 }
 
 /*
  * close DB
  */ 
-int closeDB(Database db)
+int remote_close_db(int db)
 {
     debug;
     mDataFormat d = (mDataFormat) malloc(sizeof(struct DataFormat));
@@ -87,9 +87,9 @@ int closeDB(Database db)
         printf("Formatdata error!\n");
     }
 
-    send_data(*(ServiceHandler *)db,buf,bufSize);
+    send_data(db,buf,bufSize);
     bufSize = MAX_BUF_LEN;
-    receive_data(*(ServiceHandler *)db,buf,&bufSize);
+    receive_data(db,buf,&bufSize);
     parse_data(buf, d);
 
     if(d->cmd != CLOSE_CMD)
@@ -106,7 +106,7 @@ int closeDB(Database db)
 /*
  * set value
  */
-int putKeyValue(Database db, int key, Data *tdata)
+int remote_set_key_value(int db, int key, Data *tdata)
 {
     mDataFormat d = (mDataFormat) malloc(sizeof(struct DataFormat));
     d->cmd = SET_CMD;
@@ -125,9 +125,9 @@ int putKeyValue(Database db, int key, Data *tdata)
         printf("Formatdata error!\n");
     }
 
-    send_data(*(ServiceHandler *)db,buf,bufSize);
+    send_data(db,buf,bufSize);
     bufSize = MAX_BUF_LEN;
-    receive_data(*(ServiceHandler *)db,buf,&bufSize);
+    receive_data(db,buf,&bufSize);
     parse_data(buf, d);
     if(d->cmd != SET_CMD)
     {
@@ -141,7 +141,7 @@ int putKeyValue(Database db, int key, Data *tdata)
 /*
  * get value with the key
  */
-int getValueByKey(Database db, int key, Data *result)
+int remote_get_value_by_key(int db, int key, Data *result)
 {
     mDataFormat d = (mDataFormat) malloc(sizeof(struct DataFormat));
     d->cmd = GET_CMD;
@@ -158,11 +158,11 @@ int getValueByKey(Database db, int key, Data *result)
         printf("Formatdata error!\n");
     }
 
-    send_data(*(ServiceHandler *)db,buf,bufSize);
+    send_data(db,buf,bufSize);
     bufSize = MAX_BUF_LEN;
     char value[MAX_BUF_LEN] = "\0";
     d->value1 = value;
-    receive_data(*(ServiceHandler *)db,buf,&bufSize);
+    receive_data(db,buf,&bufSize);
     parse_data(buf, d);
 
     // printRec(d);
@@ -184,7 +184,7 @@ int getValueByKey(Database db, int key, Data *result)
 /*
  * delete one record
  */
-int deleteValueByKey(Database db, int key)
+int remote_delete_value_by_key(int db, int key)
 {
     mDataFormat d = (mDataFormat) malloc(sizeof(struct DataFormat));
     d->cmd = DEL_CMD;
@@ -206,9 +206,9 @@ int deleteValueByKey(Database db, int key)
         return -1;
     }
 
-    send_data(*(ServiceHandler *)db,buf,bufSize);
+    send_data(db,buf,bufSize);
     bufSize = MAX_BUF_LEN;
-    receive_data(*(ServiceHandler *)db,buf,&bufSize);
+    receive_data(db,buf,&bufSize);
     parse_data(buf, d);
     if(d->cmd != DEL_CMD)
     {
