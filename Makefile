@@ -5,7 +5,7 @@ TAEGETS = arming client server \
 all:	arming client server
 
 #remote client command line
-client: socketwrapper.o protocol.o remoteDBApi.o client.o
+client: socketwrapper.o protocol.o remoteDBApi.o distributeDBApi.o client.o 
 	gcc -o $@ $^ -ltokyocabinet
 #server
 server: socketwrapper.o protocol.o dbApi.o server.o
