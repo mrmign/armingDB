@@ -109,23 +109,20 @@ int closeDB(Database db)
             {
                 tcmdbout(all_opened_db,(void *)dbname, ksize);
                 pthread_mutex_unlock(&dbmutex);
+                free(dbname);
+                free(opendb);
+                break;
             }
+            tcmdbput(all_opened_db, (void *)dbname, ksize, (void *)opendb, vsize);
+            pthread_mutex_unlock(&dbmutex);
             free(dbname);
             free(opendb);
-            break;
+            return 0;
         }
-        tcmdbput(all_opened_db, (void *)dbname, ksize, (void *)opendb, vsize);
         pthread_mutex_unlock(&dbmutex);
         free(dbname);
         free(opendb);
-        return 0;
     }
-    pthread_mutex_unlock(&dbmutex);
-    free(dbname);
-    free(opendb);
-
-
-
     if (tchdbclose(db))
     {
         tchdbdel(hdb);
