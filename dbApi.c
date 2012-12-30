@@ -123,20 +123,20 @@ int closeDB(Database db)
     pthread_mutex_unlock(&dbmutex);
     free(dbname);
     free(opendb);
-}
 
 
-if (tchdbclose(db))
-{
-    tchdbdel(hdb);
-    return 0;
-}
-else
-{
-    int ecode = tchdbecode(db);
-    fprintf(stderr, "close error: %s\n", tchdberrmsg(ecode));
-    return -1;
-}
+
+    if (tchdbclose(db))
+    {
+        tchdbdel(hdb);
+        return 0;
+    }
+    else
+    {
+        int ecode = tchdbecode(db);
+        fprintf(stderr, "close error: %s\n", tchdberrmsg(ecode));
+        return -1;
+    }
 }
 
 /*
