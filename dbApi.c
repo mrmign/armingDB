@@ -54,7 +54,7 @@ Database createNewDB(char *dbName)
             hdb = opendb->hdb;
             opendb->counter ++;
             tcmdbput(all_opened_db, (void *)dbName, strlen(dbName), (void *)opendb, vsize);
-           // pthread_mutex_unlock(&dbmutex);
+            pthread_mutex_unlock(&dbmutex);
             free (opendb);
             return (Database)hdb;
         }
@@ -108,32 +108,35 @@ int closeDB(Database db)
             if(opendb->counter <= 0)
             {
                 tcmdbout(all_opened_db,(void *)dbname, ksize);
-                free(dbname);
-                free(opendb);
-                break;
+                pthread_mutex_unlock(&dbmutex);
             }
-            tcmdbput(all_opened_db, (void *)dbname, ksize, (void *)opendb, vsize);
             free(dbname);
             free(opendb);
-            return 0;
+            break;
         }
+        tcmdbput(all_opened_db, (void *)dbname, ksize, (void *)opendb, vsize);
         pthread_mutex_unlock(&dbmutex);
         free(dbname);
         free(opendb);
-    }
-
-
-    if (tchdbclose(db))
-    {
-        tchdbdel(hdb);
         return 0;
     }
-    else
-    {
-        int ecode = tchdbecode(db);
-        fprintf(stderr, "close error: %s\n", tchdberrmsg(ecode));
-        return -1;
-    }
+    pthread_mutex_unlock(&dbmutex);
+    free(dbname);
+    free(opendb);
+}
+
+
+if (tchdbclose(db))
+{
+    tchdbdel(hdb);
+    return 0;
+}
+else
+{
+    int ecode = tchdbecode(db);
+    fprintf(stderr, "close error: %s\n", tchdberrmsg(ecode));
+    return -1;
+}
 }
 
 /*
