@@ -1,0 +1,146 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+ADDR_LENGTH	distributeDBApi.c	21;"	d	file:
+API_H_	dbApi.h	24;"	d
+CLOSE_CMD	protocol.h	24;"	d
+DEL_CMD	protocol.h	27;"	d
+Data	dbApi.h	/^} Data;$/;"	t	typeref:struct:myData
+DataFormat	protocol.h	/^typedef struct DataFormat$/;"	s
+Database	dbApi.h	/^typedef void* Database;$/;"	t
+ERROR_RESP	protocol.h	28;"	d
+FAIL	client.c	30;"	d	file:
+GET_CMD	protocol.h	26;"	d
+IP_ADDR	distributeDBApi.c	20;"	d	file:
+IP_ADDR	remoteDBApi.c	28;"	d	file:
+IP_ADDR	server.c	37;"	d	file:
+IP_ADDR	testsocketwrapperclient.c	26;"	d	file:
+IP_ADDR	testsocketwrapperserver.c	27;"	d	file:
+InitClient	socketwrapper.c	/^void InitClient()                                    $/;"	f
+InitServer	socketwrapper.c	/^void InitServer()                                    $/;"	f
+MAX	client.c	28;"	d	file:
+MAX_BUF_LEN	remoteDBApi.c	29;"	d	file:
+MAX_BUF_LEN	server.c	38;"	d	file:
+MAX_BUF_LEN	testprotocol.c	27;"	d	file:
+MAX_BUF_LEN	testsocketwrapperclient.c	27;"	d	file:
+MAX_BUF_LEN	testsocketwrapperserver.c	28;"	d	file:
+MAX_CONNECT_FD	socketwrapper.h	35;"	d
+MAX_CONNECT_QUEUE	socketwrapper.h	33;"	d
+MAX_DB_NODE_NUM	distributeDBApi.c	22;"	d	file:
+MAX_LISTEN_QUEUE	socketwrapper.h	36;"	d
+MAX_TASK_NUM	server.c	40;"	d	file:
+OPEN_CMD	protocol.h	23;"	d
+PORT	distributeDBApi.c	19;"	d	file:
+PORT	remoteDBApi.c	27;"	d	file:
+PORT	server.c	36;"	d	file:
+PORT	testsocketwrapperclient.c	25;"	d	file:
+PORT	testsocketwrapperserver.c	26;"	d	file:
+PrepareSocket	socketwrapper.c	/^void PrepareSocket(char *addr,int port)                        $/;"	f
+SET_CMD	protocol.h	25;"	d
+SUCCESS	client.c	29;"	d	file:
+ServiceHandler	socketwrapper.h	/^typedef int ServiceHandler;$/;"	t
+TAEGETS	Makefile	/^TAEGETS = arming client server \\$/;"	m
+_PROTOCOL_H_	protocol.h	21;"	d
+_REMOTE_DB_API_H__	remoteDBApi.h	22;"	d
+_SOCKET_WRAPPER_H_	socketwrapper.h	22;"	d
+_SOCKET_WRAPPER_PRIV_H_	socketwrapper_priv.h	3;"	d
+addr	distributeDBApi.c	/^    char addr[ADDR_LENGTH];$/;"	m	struct:db_node	file:
+all_opened_db	dbApi.c	/^TCMDB *all_opened_db = NULL;$/;"	v
+buf	server.c	/^    char buf[MAX_BUF_LEN];\/\/$/;"	m	struct:task_node	file:
+buf_size	server.c	/^    int buf_size;$/;"	m	struct:task_node	file:
+check	client.c	/^int check(char *pat, char *str)$/;"	f
+clientaddr	socketwrapper.c	/^struct sockaddr_in clientaddr;  $/;"	v	typeref:struct:sockaddr_in
+closeDB	dbApi.c	/^int closeDB(Database db)$/;"	f
+closeDB	distributeDBApi.c	/^int closeDB(Database db)$/;"	f
+close_mdb	server.c	/^void close_mdb()$/;"	f
+close_remote_service	socketwrapper.c	/^int close_remote_service(ServiceHandler h)$/;"	f
+cmd	client.c	/^char cmd[6];$/;"	v
+cmd	protocol.h	/^	int cmd;$/;"	m	struct:DataFormat
+counter	dbApi.c	/^    int counter;$/;"	m	struct:opened_db	file:
+createNewDB	dbApi.c	/^Database createNewDB(char *dbName)$/;"	f
+createNewDB	distributeDBApi.c	/^Database createNewDB(char *dbName)$/;"	f
+create_MDB	dbApi.c	/^Database  create_MDB()$/;"	f
+db	client.c	/^Database db = NULL;$/;"	v
+db	distributeDBApi.c	/^    int db;$/;"	m	struct:db_node	file:
+db_node	distributeDBApi.c	/^typedef struct db_node$/;"	s	file:
+db_node_t	distributeDBApi.c	/^} db_node_t;\/\/ db server node $/;"	t	typeref:struct:db_node	file:
+dbmutex	dbApi.c	/^pthread_mutex_t dbmutex;$/;"	v
+dbname	client.c	/^char dbname[100];$/;"	v
+debug	debug.h	21;"	d
+debug_argv	debug.h	23;"	d
+deleteValueByKey	dbApi.c	/^int deleteValueByKey(Database db, int key)$/;"	f
+deleteValueByKey	distributeDBApi.c	/^int deleteValueByKey(Database db, int key)$/;"	f
+deleteValueByKey_MDB	dbApi.c	/^int deleteValueByKey_MDB(Database mdb,int key)$/;"	f
+delete_MDB	dbApi.c	/^int delete_MDB(Database mdb)$/;"	f
+detach_sockfd_mdb	server.c	/^void detach_sockfd_mdb(int sockfd)$/;"	f
+epollfd	socketwrapper.c	/^int epollfd = -1;$/;"	v
+error_response	server.c	/^int error_response(ServiceHandler h,char * errorinfo)$/;"	f
+event	server.c	/^sem_t event[MAX_TASK_NUM];$/;"	v
+exeCmd	client.c	/^int exeCmd(char *str)$/;"	f
+format_data	protocol.c	/^int format_data( char *buf, mDataFormat data)$/;"	f
+getLine	client.c	/^int getLine(char *buf, int size)$/;"	f
+getValueByKey	dbApi.c	/^int getValueByKey(Database db, int key, Data *result)$/;"	f
+getValueByKey	distributeDBApi.c	/^int getValueByKey(Database db, int key, Data *result)$/;"	f
+getValueByKey_MDB	dbApi.c	/^int getValueByKey_MDB(Database mdb,int key,Data *value)$/;"	f
+get_mdb	server.c	/^void get_mdb(int sockfd, Database* db)$/;"	f
+handle_one_request	server.c	/^int handle_one_request(ServiceHandler h, char *buf, int buf_size)$/;"	f
+handle_requests	server.c	/^int handle_requests(int task_num)$/;"	f
+hdb	dbApi.c	/^    TCHDB *hdb;$/;"	m	struct:opened_db	file:
+init_mdb	server.c	/^void init_mdb()$/;"	f
+initialize_service	socketwrapper.c	/^int initialize_service(char *addr, int port)$/;"	f
+key	client.c	/^char key[5];$/;"	v
+last	server.c	/^    struct task_node *last;\/\/if it is the first node, it will point to the last node,if not, it is null $/;"	m	struct:task_node	typeref:struct:task_node::task_node	file:
+len_value1	protocol.h	/^	int len_value1;$/;"	m	struct:DataFormat
+len_value2	protocol.h	/^	int len_value2;$/;"	m	struct:DataFormat
+length	dbApi.h	/^	int length;   \/*the length of value*\/$/;"	m	struct:myData
+mDataFormat	protocol.h	/^}*mDataFormat;$/;"	t	typeref:struct:DataFormat
+mOpenedDB	dbApi.c	/^}mOpenedDB;$/;"	t	typeref:struct:opened_db	file:
+main	client.c	/^int main(int argc, char **argv)$/;"	f
+main	server.c	/^int main(int argc, char **argv)$/;"	f
+main	testprotocol.c	/^int main()$/;"	f
+main	testsocketwrapperclient.c	/^int main()$/;"	f
+main	testsocketwrapperserver.c	/^int main()$/;"	f
+match_sockfd_mdb	server.c	/^void match_sockfd_mdb(int sockfd, Database db)$/;"	f
+mdb	server.c	/^Database  mdb = NULL;$/;"	v
+myData	dbApi.h	/^typedef struct myData$/;"	s
+name	client.c	/^const char *name = "armingDB::";$/;"	v
+next	server.c	/^    struct task_node *next;\/\/next node$/;"	m	struct:task_node	typeref:struct:task_node::task_node	file:
+nodes	distributeDBApi.c	/^db_node_t nodes[MAX_DB_NODE_NUM] = $/;"	v
+open_remote_service	socketwrapper.c	/^ServiceHandler open_remote_service(char *addr, int port)$/;"	f
+opened_db	dbApi.c	/^typedef struct opened_db$/;"	s	file:
+parse_data	protocol.c	/^int parse_data(char *buf, mDataFormat data)$/;"	f
+pm	client.c	/^regmatch_t pm[0];$/;"	v
+port	distributeDBApi.c	/^    int  port;$/;"	m	struct:db_node	file:
+printRec	remoteDBApi.c	/^void printRec(mDataFormat data)$/;"	f
+printRec	server.c	/^void printRec(mDataFormat data)$/;"	f
+putKeyValue	dbApi.c	/^int putKeyValue(Database db, int key, Data *tdata)$/;"	f
+putKeyValue	distributeDBApi.c	/^int putKeyValue(Database db, int key, Data *tdata)$/;"	f
+putKeyValue_MDB	dbApi.c	/^int putKeyValue_MDB(Database mdb,int key,Data value)$/;"	f
+random_int	server.c	/^int random_int(int x)$/;"	f
+receive_data	socketwrapper.c	/^int receive_data(ServiceHandler h, char *buf, int *bufSize)$/;"	f
+remote_close_db	remoteDBApi.c	/^int remote_close_db(int db)$/;"	f
+remote_create_new_db	remoteDBApi.c	/^int remote_create_new_db(char *dbName, char *addr, int port)$/;"	f
+remote_delete_value_by_key	remoteDBApi.c	/^int remote_delete_value_by_key(int db, int key)$/;"	f
+remote_get_value_by_key	remoteDBApi.c	/^int remote_get_value_by_key(int db, int key, Data *result)$/;"	f
+remote_set_key_value	remoteDBApi.c	/^int remote_set_key_value(int db, int key, Data *tdata)$/;"	f
+req	server.c	/^    ServiceHandler req;\/\/ request sockfd$/;"	m	struct:task_node	file:
+send_data	socketwrapper.c	/^int send_data(ServiceHandler h, char *buf, int bufSize)$/;"	f
+serveraddr	socketwrapper.c	/^struct sockaddr_in serveraddr;                  $/;"	v	typeref:struct:sockaddr_in
+service_start	socketwrapper.c	/^ServiceHandler service_start()$/;"	f
+service_stop	socketwrapper.c	/^int service_stop(ServiceHandler h)$/;"	f
+set_nonblocking	socketwrapper.c	/^int set_nonblocking(int fd)$/;"	f
+shutdown_service	socketwrapper.c	/^int shutdown_service()$/;"	f
+sockfd	socketwrapper.c	/^int sockfd = -1;$/;"	v
+substr	client.c	/^void substr(const char*str,char* buf, unsigned start, unsigned end)$/;"	f
+task_list	server.c	/^task_node_t *task_list[MAX_TASK_NUM];\/\/ all the task $/;"	v
+task_node	server.c	/^typedef struct task_node$/;"	s	file:
+task_node_t	server.c	/^}task_node_t;$/;"	t	typeref:struct:task_node	file:
+thread_id	server.c	/^pthread_t thread_id[MAX_TASK_NUM];$/;"	v
+value	client.c	/^char value[1024]; $/;"	v
+value	dbApi.h	/^	char *value;$/;"	m	struct:myData
+value1	protocol.h	/^	char *value1;$/;"	m	struct:DataFormat
+value2	protocol.h	/^	char *value2;$/;"	m	struct:DataFormat
+value_num	protocol.h	/^	int value_num;$/;"	m	struct:DataFormat
