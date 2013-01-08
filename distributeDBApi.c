@@ -31,7 +31,7 @@ typedef struct db_node
 db_node_t nodes[MAX_DB_NODE_NUM] = 
 {
     {IP_ADDR, 5001, -1},
-    {IP_ADDR, 5002, -1}
+    {"192.168.1.12", 5001, -1}
 };
 
 /* create db */
