@@ -26,3 +26,8 @@ Multi-clients can operate on the same Database file, and different clients can o
 You can start more than one db servers, and the client saves or gets data from different db servers.
 However you must let the clients know all the db server nodes, then you can connect with them.
 Our next goal is to support auto-adapt, in that clients can get the server nodes when connecting.
+
+## Now it support distribute servers
+Client can get all the cluster server nodes from the master server, and save value on different servers. And it supports 
+consistent hash. However, it doesn't support adding server node during other server nodes running, and remove one node.
+
