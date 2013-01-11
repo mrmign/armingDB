@@ -32,7 +32,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <time.h>
-//#include "server.h"
+#include "debug.h"
 #include "serverNode.h"
 
 #define MAX_BUF_LEN         1024
@@ -407,23 +407,31 @@ int handle_control_request(ServiceHandler h, char *buf, int bufSize)
     int ret;
     char ppData[MAX_DATA_NUM][MAX_DATA_NUM] = {0};
     ret = parse_ctl_data(buf, bufSize, &cmd, &dataNum, ppData);
+    debug_argv("cmd:%d, num:%d \n",cmd, dataNum);
     if(dataNum > 1)
     {
         ret = -1;
     }
-    if(ret = -1)
+    debug_argv("ret %d\n",ret);
+    if(-1 = ret)
     {
+        debug_argv("\n");
         error_response(h,"Data Format Error!\n");
         return -1;
     }
-    if(cmd == CTL_REG_CMD)
+    if(cmd == CTL_REG_CMD && (dataNum == 1 || dataNum == 0))
     {
+        debug_argv("handleControlrequests!!\n");
         if(dataNum == 1)
         {
             add_cluster_nodes(cluster_nodes_g, ppData,dataNum);
         }
         int nodeNum = MAX_DATA_NUM;
         cluster_nodes_info(cluster_nodes_g,ppData,&nodeNum);
+
+        for(ret = 0;ret<nodeNum;ret++)
+            debug_argv("%s\n",ppData[ret]);
+
         bufSize = MAX_BUF_LEN;
         format_ctl_data(buf,&bufSize,CTL_REG_CMD,ppData,nodeNum);
         send_data(h,buf,bufSize);
@@ -431,6 +439,7 @@ int handle_control_request(ServiceHandler h, char *buf, int bufSize)
     }
     else
     {
+        debug_argv("\n");
         error_response(h,"Unknow Request!\n");
         return -1;
     }
@@ -440,12 +449,13 @@ int handle_control_request(ServiceHandler h, char *buf, int bufSize)
 int create_cluster(char *addr, int port)
 {
     cluster_nodes_g = init_cluster();
-    // add_node(cluster_nodes_g, addr, port);
+    add_node(cluster_nodes_g, addr, port);
     return 0;
 }
 
 int load_cluster_nodes(char *addr, int port)
 {
+    debug_argv(" %s %d",addr,port);
     cluster_nodes_g = register_and_load_cluster_nodes(addr,port);
     return 0;
 }
