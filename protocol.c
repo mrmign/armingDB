@@ -22,7 +22,7 @@
 #include <stdlib.h> 
 #include <string.h>
 #include "protocol.h"
-//#include "debug.h"
+#include "debug.h"
 
 #define debug 	printf
 // typedef struct DataHeader
@@ -88,11 +88,11 @@ int format_ctl_data(char *pBuf,int *pBufSize,int cmd,char ppData[MAX_DATA_NUM][M
     mDataFormat pData = (mDataFormat)pBuf;
     pData->cmd = htonl(cmd);
     pData->value_num = htonl(DataNum);
-    pData->len_value1 = htonl(0);
+    // pData->len_value1 = htonl(0);
     char * p = pBuf + 2 * sizeof(int); /* point to pData->len_value1 */
     for(i=0;i<DataNum;i++)
     {
-        *(int*)p = strlen(ppData[i]);
+        *(int*)p = htonl(strlen(ppData[i]));
         p += sizeof(int);        
         memcpy(p,ppData[i],strlen(ppData[i]));
         p += strlen(ppData[i]);
@@ -155,28 +155,30 @@ int parse_ctl_data(char *pBuf,int BufSize,int *pcmd,int *pDataNum,char ppData[MA
 	mDataFormat pData = (mDataFormat)pBuf;
     *pcmd = ntohl(pData->cmd);
     *pDataNum = ntohl(pData->value_num);
-    debug("ParseDataN CMD:%d,DataNum:%d\n",*pcmd,*pDataNum);
+    debug_argv("parse control data CMD:%d,DataNum:%d\n",*pcmd,*pDataNum);
     if(*pDataNum > MAX_DATA_NUM)
     {
         fprintf(stderr,"Parse control Error:*pDataNum > MAX_DATA_NUM,%s:%d\n", __FILE__,__LINE__);
+        debug_argv("\n");
         return -1;        
     }
     int DataSize = 0;
-    char * p = pBuf + 2 * sizeof(int);
+    char * p = pBuf + 2 * sizeof(int);//sizeof(mDataFormat) -2 * ( sizeof(int) + sizeof(char*));
     int i = 0;
     for(i=0;i<(*pDataNum);i++)
     {
-        DataSize = *(int*)p;
-        debug("ParseDataN:%d,%s\n",DataSize,p + sizeof(int));
+        DataSize = ntohl(*(int*)p);
+        debug_argv("%d,%s\n",DataSize,p + sizeof(int));
         if(DataSize > MAX_DATA_LEN)
         {
             fprintf(stderr,"Parse control Error:DataSize > MAX_DATA_LEN,%s:%d\n", __FILE__,__LINE__);
+            debug_argv("\n");
             return -1;        
         }        
         p += sizeof(int);
         memcpy(ppData[i],p,DataSize);
         ppData[i][DataSize] = '\0';
-        debug("ParseDataN:%d,%s\n",DataSize,ppData[i]);
+        debug_argv("%d %s\n",DataSize,ppData[i]);
         p += DataSize;
     }
     return 0;   

@@ -18,10 +18,12 @@
 #include "serverNode.h"
 #include <string.h>
 #include <stdlib.h>
-//#include "debug.h"
+#include "debug.h"
 
-#define debug   printf
+// #define debug   printf
 
+#define PORT                5001
+#define IP_ADDR             "127.0.0.1"
 #define MAX_BUF_LEN     1024
 
 /* init cluster */
@@ -83,16 +85,19 @@ server_node_t * get_node(cluster_t *cluster, int hash)
 /* add node to cluster */
 int add_node(cluster_t *cluster, char *addr, int port)
 {
+    debug_argv(" add_node:%s %d \n",addr, port);
     int i = 0;
     if(cluster->nodes_num >= MAX_NODE_NUM)
         return -1;
     server_node_t *node = (server_node_t *)malloc(sizeof(server_node_t));
     memcpy(node->addr, addr, strlen(addr));
+    node->addr[strlen(addr)] = '\0';
     node->port = port;
     node->fd = -1;
     if(cluster->nodes_num == 0)
     {
         node->hash = MAX_NODE_NUM;
+        debug("add_node start:%d     hash:%d\n",i,node->hash);
         for(i = 0;i<MAX_NODE_NUM;i++)
             cluster->nodes[i] = node;
     }
@@ -100,6 +105,7 @@ int add_node(cluster_t *cluster, char *addr, int port)
     {
         int start;
         node->hash = get_hash_value(cluster, cluster->nodes_num, &start);
+        debug("add_node start:%d     hash:%d\n",start,node->hash);
         for (i = start; i<node->hash;i++)
             cluster->nodes[i] = node;
     }
@@ -123,7 +129,9 @@ cluster_t * register_and_load_cluster_nodes(char *addr, int port)
     char szMsg[MAX_BUF_LEN] = "\0";
     char ppData[MAX_DATA_NUM][MAX_DATA_LEN] = {0};
     ServiceHandler h = -1;
-    h = open_remote_service(addr,port);
+    // master server's addr and port
+    h = open_remote_service(IP_ADDR,PORT);
+
     if(addr == NULL)
     {
         DataNum = 0;
@@ -139,6 +147,7 @@ cluster_t * register_and_load_cluster_nodes(char *addr, int port)
     send_data(h,Buf,BufSize);
     receive_data(h,Buf,&BufSize);
     int cmd = -1;
+    parse_ctl_data(Buf,BufSize,&cmd,&DataNum,ppData);
     cluster_t *cluster = init_cluster();
     add_cluster_nodes(cluster, ppData, DataNum);
     close_remote_service(h);
