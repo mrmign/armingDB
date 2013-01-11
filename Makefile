@@ -10,6 +10,11 @@ client: socketwrapper.o protocol.o remoteDBApi.o serverNode.o distributeDBApi.o 
 #server
 server: socketwrapper.o protocol.o dbApi.o serverNode.o server.o server_start.o
 	gcc -g -o $@ $^ -ltokyocabinet
+	@ mkdir server1 server2 server3
+	@ cp server ./server1/
+	@ cp server ./server2/
+	@ cp server ./server3/
+	@ rm server 
 arming:	dbApi.o client.o
 	gcc -o $@ $^ -ltokyocabinet
 

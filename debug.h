@@ -18,9 +18,9 @@
  *
  */
 
-#define debug  printf("")
+#define debug  printf
 //#define debug_argv(fmt, args...)  printf("")
-#define debug_argv(fmt, args...)  printf(fmt, ##args)
-//#define debug_argv(fmt, args...)  printf("%s : %d : %s "fmt,__FILE__,__LINE__,__FUNCTION__, ##args)
+// #define debug_argv(fmt, args...)  printf(fmt, ##args)
+#define debug_argv(fmt, args...)  printf("%s : %d : %s "fmt,__FILE__,__LINE__,__FUNCTION__, ##args)
 
 //#define debug  printf("%s : %d : %s\n",__FILE__,__LINE__, __FUNCTION__)

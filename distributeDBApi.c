@@ -12,15 +12,15 @@
 /*                           to call                                     */
 /*************************************************************************/
 
-#include<stdio.h>
+#include <stdio.h>
 #include "dbApi.h"
 #include "remoteDBApi.h"
 #include "serverNode.h"
-#define PORT                5001
-#define IP_ADDR             "127.0.0.1"
+// #define PORT                5001
+// #define IP_ADDR             "127.0.0.1"
 #define ADDR_LENGTH         128
 #define MAX_DB_NODE_NUM     2
-
+#define debug           printf
 /*typedef struct db_node
 {
     char addr[ADDR_LENGTH];
@@ -37,11 +37,13 @@ db_node_t nodes[MAX_DB_NODE_NUM] =
 /* create db */
 Database createNewDB(char *dbName)
 {
+    debug("createDB\n");
     cluster_t *cluster = register_and_load_cluster_nodes(NULL,0);
     int i = 0;
     while(i<MAX_NODE_NUM)
     {
         server_node_t *node = (server_node_t*)get_node(cluster,i);
+        debug("createdb: %s %d\n",node->addr,node->port);
         node->fd = remote_create_new_db(dbName,node->addr,node->port);
         if(node->fd == -1)
             return NULL;
