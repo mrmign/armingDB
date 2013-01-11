@@ -61,30 +61,32 @@ int main()
     {
         printf("test error!\n");
     }
-    // if(cmd == CLOSE_CMD && DataNum == 0)
-    // {
-    //     printf("Test Zero Data Result: Pass\n");
-    // }
-    // BufSize = MAX_BUF_LEN;
-    // FormatData1(Buf,&BufSize,OPEN_CMD,str,strlen(str));
-    // ParseData(Buf,MAX_BUF_LEN,&cmd,&DataNum,Data1,&Data1Size,Data2,&Data2Size);
-    // if(cmd == OPEN_CMD && DataNum == 1
-    //     && Data1Size == strlen(str)
-    //     && strcmp(Data1,str) == 0)
-    // {
-    //     printf("%s\n",Data1);
-    //     printf("Test One Data Result: Pass\n");
-    // }
-    // BufSize = MAX_BUF_LEN;
-    // FormatData2(Buf,&BufSize,SET_CMD,str,strlen(str),str,strlen(str));
-    // ParseData(Buf,MAX_BUF_LEN,&cmd,&DataNum,Data1,&Data1Size,Data2,&Data2Size);
-    // if(cmd == SET_CMD && DataNum == 2
-    //     && Data1Size == strlen(str) && Data2Size == strlen(str)
-    //     && strcmp(Data1,str) == 0 && strcmp(Data2,str) == 0)
-    // {
-    //     printf("%s\n",Data1);
-    //     printf("%s\n",Data2);
-    //     printf("Test Two Data Result: Pass\n");
-    // }
+   
+
+   char ppData[10][MAX_DATA_LEN] = 
+    {
+        {"127.0.0.1 5001"},
+        {"127.0.0.2 5002"},
+        {"127.0.0.3 5003"},
+        {"127.0.0.4 5004"},
+        {"127.0.0.5 5005"},
+        {"127.0.0.6 5006"},
+        {"127.0.0.7 5007"},
+        {"127.0.0.8 5008"},
+        {"127.0.0.9 5009"},
+        {"127.0.0.10 5010"}
+    };
+    char ppData1[10][MAX_DATA_LEN] = {0};
+    BufSize = MAX_BUF_LEN;
+    format_ctl_data(Buf,&BufSize,CTL_REG_CMD,ppData,10);
+    int DataNum = 0;
+    int cmd = -1;
+    parse_ctl_data(Buf,MAX_BUF_LEN,&cmd,&DataNum,ppData1);
+    printf("CMD:%d,DataNum:%d\n",cmd,DataNum);
+    int i = 0;
+    for(i=0;i<10;i++)
+    {
+        printf("%s\n",ppData1[i]);
+    }
     return 0;
 }
