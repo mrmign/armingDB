@@ -1,14 +1,14 @@
 # this is for arming
-TAEGETS = arming client server \
-		testprotocol testclient testserver
+TAEGETS = arming client server  
+#\testprotocol testclient testserver
 
 all:	arming client server
 
 #remote client command line
-client: socketwrapper.o protocol.o remoteDBApi.o distributeDBApi.o client.o 
+client: socketwrapper.o protocol.o remoteDBApi.o serverNode.o distributeDBApi.o client.o 
 	gcc -o $@ $^ -ltokyocabinet
 #server
-server: socketwrapper.o protocol.o dbApi.o server.o
+server: socketwrapper.o protocol.o dbApi.o serverNode.o server.o server_start.o
 	gcc -g -o $@ $^ -ltokyocabinet
 arming:	dbApi.o client.o
 	gcc -o $@ $^ -ltokyocabinet
