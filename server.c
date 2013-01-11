@@ -32,9 +32,9 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <time.h>
+//#include "server.h"
+#include "serverNode.h"
 
-#define PORT                5001
-#define IP_ADDR             "127.0.0.1"
 #define MAX_BUF_LEN         1024
 
 #define MAX_TASK_NUM    3
@@ -50,6 +50,8 @@ typedef struct task_node
     struct task_node *last;//if it is the first node, it will point to the last node,if not, it is null 
 }task_node_t;
 task_node_t *task_list[MAX_TASK_NUM];// all the task 
+
+cluster_t * cluster_nodes_g = NULL;
 
 /* generate random int */
 int random_int(int x)
@@ -93,23 +95,11 @@ void get_mdb(int sockfd, Database* db)
 
 int handle_requests(int task_num);
 int handle_one_request(ServiceHandler h, char *buf, int buf_size);
+int handler(ServiceHandler h, char *buf, int bufSize);
+int handle_control_request(ServiceHandler h, char *buf, int bufSize);
 
-int main(int argc, char **argv)
+int service_engine(char *addr, int port)
 {
-    /* Server Engine for Client's Connections */
-    printf(" Arming Database Server starts!\n");
-    char *addr;
-    int port;
-    if(argc < 3)
-    {
-        addr = IP_ADDR;
-        port = PORT;
-    }
-    else
-    {
-        addr = argv[1];
-        port = atoi(argv[2]);
-    }
     int i;
     if(MAX_TASK_NUM > 0)
     {
@@ -117,7 +107,7 @@ int main(int argc, char **argv)
         {
             sem_init(&event[i], 0, 0);
             int temp = i;
-            if (pthread_create(&thread_id[i], NULL, (void *)handle_requests, (void *)temp) != 0)
+           if (pthread_create(&thread_id[i], NULL, (void *)handle_requests, (void *)temp) != 0)
             {
                 printf("pthread_create error, %s:%d\n",__FILE__, __LINE__);
                 exit(-1);
@@ -137,7 +127,7 @@ int main(int argc, char **argv)
     {
         h = service_start();
         //        handle_request(h);  
-        task_node_t *tnode = malloc( sizeof(task_node_t));
+        task_node_t *tnode = (task_node_t *)malloc( sizeof(task_node_t));
         tnode->buf_size = MAX_BUF_LEN;
         if (receive_data (h, tnode->buf, &(tnode->buf_size)) == 0)
         {
@@ -192,6 +182,7 @@ int main(int argc, char **argv)
     return 0;
 }
 
+
 /*
  * deal with incorrect operation
  */
@@ -233,7 +224,7 @@ int handle_requests(int task_num)
 
         // if (handle_one_request(h, pnode->buf, pnode->buf_size) == -1)
         //     continue;
-        handle_one_request(h, pnode->buf, pnode->buf_size);     
+        handler(h, pnode->buf, pnode->buf_size);     
 
         /* deal with pnode and its next node */
         if (pnode->next == NULL)
@@ -247,7 +238,20 @@ int handle_requests(int task_num)
         free(pnode);
     }
 }
-
+int handler(ServiceHandler h, char *buf, int bufSize)
+{
+    int cmd = -1;
+    int dataNum = -1;
+    parse_cmd(buf,bufSize,&cmd,&dataNum);
+    if(cmd == CTL_REG_CMD)
+    {
+        return handle_control_request(h,buf,bufSize);
+    }
+    else
+    {
+        return handle_one_request(h,buf,bufSize);
+    }
+}
 int handle_one_request(ServiceHandler h, char *buf, int buf_size)
 {
 
@@ -389,4 +393,59 @@ int handle_one_request(ServiceHandler h, char *buf, int buf_size)
         error_response(h, "Unknow Request!\n");
     }                                   
     free(data);
+    return 0;
+}
+
+int handle_control_request(ServiceHandler h, char *buf, int bufSize)
+{
+    int cmd = -1;
+    int dataNum = -1;
+
+    if(bufSize == 0)
+        return -1;
+
+    int ret;
+    char ppData[MAX_DATA_NUM][MAX_DATA_NUM] = {0};
+    ret = parse_ctl_data(buf, bufSize, &cmd, &dataNum, ppData);
+    if(dataNum > 1)
+    {
+        ret = -1;
+    }
+    if(ret = -1)
+    {
+        error_response(h,"Data Format Error!\n");
+        return -1;
+    }
+    if(cmd == CTL_REG_CMD)
+    {
+        if(dataNum == 1)
+        {
+            add_cluster_nodes(cluster_nodes_g, ppData,dataNum);
+        }
+        int nodeNum = MAX_DATA_NUM;
+        cluster_nodes_info(cluster_nodes_g,ppData,&nodeNum);
+        bufSize = MAX_BUF_LEN;
+        format_ctl_data(buf,&bufSize,CTL_REG_CMD,ppData,nodeNum);
+        send_data(h,buf,bufSize);
+
+    }
+    else
+    {
+        error_response(h,"Unknow Request!\n");
+        return -1;
+    }
+    return 0;
+}
+
+int create_cluster(char *addr, int port)
+{
+    cluster_nodes_g = init_cluster();
+    // add_node(cluster_nodes_g, addr, port);
+    return 0;
+}
+
+int load_cluster_nodes(char *addr, int port)
+{
+    cluster_nodes_g = register_and_load_cluster_nodes(addr,port);
+    return 0;
 }
