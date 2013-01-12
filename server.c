@@ -413,7 +413,7 @@ int handle_control_request(ServiceHandler h, char *buf, int bufSize)
         ret = -1;
     }
     debug_argv("ret %d\n",ret);
-    if(-1 = ret)
+    if(-1 == ret)
     {
         debug_argv("\n");
         error_response(h,"Data Format Error!\n");
