@@ -25,6 +25,9 @@
 #include <string.h>
 #include <sys/epoll.h>
 #include <fcntl.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+
 #include "socketwrapper.h"
 #include "socketwrapper_priv.h"
 #include "debug.h" 
@@ -44,7 +47,11 @@ void PrepareSocket(char *addr,int port)
     serveraddr.sin_port = htons(port);              
     serveraddr.sin_addr.s_addr = inet_addr(addr);   
     memset(&serveraddr.sin_zero, 0, 8);             
-    sockfd = socket(PF_INET,SOCK_STREAM,0);         
+    sockfd = socket(PF_INET,SOCK_STREAM,0);      
+    int opt = 1;
+    int len = sizeof(opt);
+    //reuse socket
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,&opt, &len); 
     if(sockfd == -1)                                
     {                                               
         fprintf(stderr,"Socket Error,%s:%d\n",      
